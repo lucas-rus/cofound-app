@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Persistence</ID>
+  <OriginalElement>cofound</OriginalElement>
+  <nodes>
+    <node x="4.5" y="380.5">ProjectApplication#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/ProjectApplication.java</node>
+    <node x="114.0" y="878.5">Project#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Project.java</node>
+    <node x="395.5" y="-99.5">VerificationToken#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/VerificationToken.java</node>
+    <node x="243.5" y="-85.5">Skill#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Skill.java</node>
+    <node x="129.0" y="112.5">User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java</node>
+    <node x="79.5" y="-99.5">UserProfile#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/UserProfile.java</node>
+    <node x="-109.0" y="526.5">ProjectRoleNeeded#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/ProjectRoleNeeded.java</node>
+    <node x="289.5" y="568.5">AbstractPersistable#jar:///Users/a/.m2/repository/org/springframework/data/spring-data-jpa/3.2.5/spring-data-jpa-3.2.5.jar!/org/springframework/data/jpa/domain/AbstractPersistable.class</node>
+    <node x="288.5" y="754.5">AbstractAuditable#jar:///Users/a/.m2/repository/org/springframework/data/spring-data-jpa/3.2.5/spring-data-jpa-3.2.5.jar!/org/springframework/data/jpa/domain/AbstractAuditable.class</node>
+    <node x="-109.0" y="-85.5">Role#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Role.java</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" target="Role#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Role.java" relationship="RELATION">
+      <point x="0.0" y="-85.5" />
+      <point x="203.0" y="38.0" />
+      <point x="-37.0" y="38.0" />
+      <point x="0.0" y="43.5" />
+    </edge>
+    <edge source="Project#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Project.java" target="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" relationship="RELATION">
+      <point x="0.0" y="-99.5" />
+      <point x="223.0" y="698.0" />
+      <point x="263.0" y="698.0" />
+      <point x="263.0" y="338.0" />
+      <point x="103.0" y="338.0" />
+      <point x="103.0" y="78.0" />
+      <point x="203.0" y="78.0" />
+      <point x="0.0" y="-85.5" />
+    </edge>
+    <edge source="Project#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Project.java" target="ProjectApplication#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/ProjectApplication.java" relationship="RELATION">
+      <point x="0.0" y="-99.5" />
+      <point x="223.0" y="358.0" />
+      <point x="103.0" y="358.0" />
+      <point x="0.0" y="-57.5" />
+    </edge>
+    <edge source="Project#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Project.java" target="ProjectRoleNeeded#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/ProjectRoleNeeded.java" relationship="RELATION">
+      <point x="0.0" y="-99.5" />
+      <point x="223.0" y="698.0" />
+      <point x="-17.0" y="698.0" />
+      <point x="0.0" y="71.5" />
+    </edge>
+    <edge source="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" target="VerificationToken#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/VerificationToken.java" relationship="RELATION">
+      <point x="0.0" y="-85.5" />
+      <point x="203.0" y="38.0" />
+      <point x="483.0" y="38.0" />
+      <point x="0.0" y="57.5" />
+    </edge>
+    <edge source="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" target="Skill#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/Skill.java" relationship="RELATION">
+      <point x="0.0" y="-85.5" />
+      <point x="203.0" y="38.0" />
+      <point x="303.0" y="38.0" />
+      <point x="0.0" y="43.5" />
+    </edge>
+    <edge source="ProjectApplication#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/ProjectApplication.java" target="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" relationship="RELATION">
+      <point x="0.0" y="-57.5" />
+      <point x="103.0" y="78.0" />
+      <point x="203.0" y="78.0" />
+      <point x="0.0" y="-85.5" />
+    </edge>
+    <edge source="User#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/User.java" target="UserProfile#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/UserProfile.java" relationship="RELATION">
+      <point x="0.0" y="-85.5" />
+      <point x="203.0" y="38.0" />
+      <point x="143.0" y="38.0" />
+      <point x="0.0" y="57.5" />
+    </edge>
+    <edge source="AbstractAuditable#jar:///Users/a/.m2/repository/org/springframework/data/spring-data-jpa/3.2.5/spring-data-jpa-3.2.5.jar!/org/springframework/data/jpa/domain/AbstractAuditable.class" target="AbstractPersistable#jar:///Users/a/.m2/repository/org/springframework/data/spring-data-jpa/3.2.5/spring-data-jpa-3.2.5.jar!/org/springframework/data/jpa/domain/AbstractPersistable.class" relationship="INHERITANCE">
+      <point x="0.0" y="-43.5" />
+      <point x="0.0" y="29.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="0.327212020033389" showDependencies="false" x="241.0" y="499.0" />
+  <SelectedNodes>
+    <node>UserProfile#file:///Users/a/IdeaProjects/CoFound/cofound/src/main/java/com/cofound/model/UserProfile.java</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Embeddables</Category>
+    <Category>Properties</Category>
+    <Category>Superclasses</Category>
+  </Categories>
+</Diagram>
+

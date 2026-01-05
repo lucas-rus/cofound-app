@@ -1,0 +1,119 @@
+// Colors
+$primary-color: #0056b3; // Deep Cobalt
+$primary-hover: #004494;
+$accent-color: #3b82f6; // Bright Blue
+$bg-color: #f8f9fa; // Very light gray/white
+$text-dark: #1e293b; // Slate 800
+$text-muted: #64748b; // Slate 500
+$card-bg: #ffffff;
+$border-radius: 12px;
+$shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+$shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+
+// Font
+$font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+
+// Bootstrap Overrides
+$primary: $primary-color;
+$body-bg: $bg-color;
+$body-color: $text-dark;
+$font-family-sans-serif: $font-family-base;
+$border-radius: $border-radius;
+
+@import "bootstrap/scss/bootstrap";
+
+// Custom Utilities
+body {
+  font-family: $font-family-base;
+  -webkit-font-smoothing: antialiased;
+  background-color: $bg-color;
+}
+
+.card-custom {
+  background: $card-bg;
+  border: none;
+  border-radius: $border-radius;
+  box-shadow: $shadow-sm;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+// Standalone inputs
+.form-control:focus {
+  box-shadow: none;
+  border-color: $primary-color;
+}
+
+// Unified Input Groups (The "Whole Oval" effect)
+.input-group {
+  border: 1px solid #dee2e6;
+  border-radius: $border-radius;
+  background-color: #f8f9fa; // Match bg-light
+  transition: border-color 0.2s ease;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: $primary-color;
+    // Optional: add a subtle glow if desired, but kept clean as requested
+    // box-shadow: 0 0 0 3px rgba($primary-color, 0.1); 
+  }
+
+  .input-group-text,
+  .form-control {
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .input-group-text {
+    color: $text-muted;
+  }
+}
+
+.dropdown-item {
+  border-radius: $border-radius * 0.5; // Slightly smaller radius for inner items
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:active,
+  &:focus,
+  &:hover {
+    background-color: rgba($primary-color, 0.1);
+    color: $primary-color;
+  }
+  
+  &.text-danger:hover {
+    background-color: rgba($danger, 0.1);
+    color: $danger !important;
+  }
+}
+
+.btn-primary-custom {
+  background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+  border: none;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  box-shadow: 0 4px 6px -1px rgba($primary-color, 0.2);
+  
+  &:hover {
+    background: linear-gradient(135deg, $primary-hover 0%, $primary-color 100%);
+    box-shadow: 0 6px 8px -1px rgba($primary-color, 0.3);
+  }
+}
+
+.navbar-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
