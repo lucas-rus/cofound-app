@@ -57,10 +57,10 @@ const Layout = ({ children }) => {
                           />
                         ) : (
                           <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
-                            {user.username.charAt(0).toUpperCase()}
+                            {user.username?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                         )}
-                        <span className="fw-medium">{user.username}</span>
+                        <span className="fw-medium">{user.username || 'User'}</span>
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu className="shadow-sm border-0">
