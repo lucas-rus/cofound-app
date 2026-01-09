@@ -11,11 +11,8 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:noreply@cofound.com}")
-    private String fromAddress;
-
-    @Value("${app.url:http://localhost:8080}")
-    private String appUrl;
+    private String fromAddress = "noreply@cofound.com";
+    private String appUrl = "https://cofound-app-production.up.railway.app";
 
     public EmailService() {
         this.mailSender = null;
