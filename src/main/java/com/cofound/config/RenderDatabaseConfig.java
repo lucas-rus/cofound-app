@@ -24,7 +24,9 @@ public class RenderDatabaseConfig {
             URI dbUri = new URI(databaseUrl);
             String username = dbUri.getUserInfo().split(":")[0];
             String password = dbUri.getUserInfo().split(":")[1];
-            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath() + "?sslmode=require";
+            System.out.println("Attempting to connect to DB: " + dbUrl);
+            System.out.println("DB User: " + username);
 
             return DataSourceBuilder.create()
                     .url(dbUrl)
