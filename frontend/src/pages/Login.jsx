@@ -24,7 +24,12 @@ const Login = () => {
       await login(username, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data || 'Failed to login');
+      console.error("Login error:", err);
+      const status = err.response?.status || 'N/A';
+      const statusText = err.response?.statusText || 'N/A';
+      const data = typeof err.response?.data === 'object' ? JSON.stringify(err.response?.data) : (err.response?.data || 'No data');
+      const msg = `Failed to login. Status: ${status} (${statusText}). Details: ${data}. Error: ${err.message}`;
+      setError(msg);
     }
   };
 

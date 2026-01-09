@@ -39,7 +39,12 @@ const Register = () => {
       setMsg('Registration successful! Please check your email to verify your account.');
       setTimeout(() => navigate('/login'), 5000);
     } catch (err) {
-      setError(err.response?.data || 'Failed to register');
+      console.error("Registration error:", err);
+      const status = err.response?.status || 'N/A';
+      const statusText = err.response?.statusText || 'N/A';
+      const data = typeof err.response?.data === 'object' ? JSON.stringify(err.response?.data) : (err.response?.data || 'No data');
+      const msg = `Failed to register. Status: ${status} (${statusText}). Details: ${data}. Error: ${err.message}`;
+      setError(msg);
     }
   };
 
