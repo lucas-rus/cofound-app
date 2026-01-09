@@ -12,23 +12,27 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:noreply@cofound.com}")
     private String fromAddress;
 
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
     public void sendVerificationEmail(String to, String username, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(to);
-        message.setSubject("CoFound - Verify Your Account");
-        message.setText("Hello " + username + ",\n\n"
-                + "Thank you for registering with CoFound.\n\n"
-                + "Please verify your account by clicking the link below:\n"
-                + appUrl + "/auth/verify?token=" + token + "\n\n"
-                + "If you did not request this, you can ignore this email.");
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromAddress);
+            message.setTo(to);
+            message.setSubject("CoFound - Verify Your Account");
+            message.setText("Hello " + username + ",\n\n"
+                    + "Thank you for registering with CoFound.\n\n"
+                    + "Please verify your account by clicking the link below:\n"
+                    + appUrl + "/auth/verify?token=" + token + "\n\n"
+                    + "If you did not request this, you can ignore this email.");
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send verification email: " + e.getMessage());
+        }
     }
 
     //add this later for notifications
