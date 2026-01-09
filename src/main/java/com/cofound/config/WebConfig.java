@@ -12,8 +12,7 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private String uploadDir = "/tmp/uploads";
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

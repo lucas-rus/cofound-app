@@ -35,11 +35,8 @@ public class UserController {
     private final SkillRepository skillRepository;
     private final ProjectRepository projectRepository;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-    
-    @Value("${app.url:http://localhost:8080}")
-    private String appUrl;
+    private String uploadDir = "/tmp/uploads";
+    private String appUrl = "https://cofound-app-production.up.railway.app";
 
     public UserController(UserRepository userRepository, SkillRepository skillRepository, ProjectRepository projectRepository) {
         this.userRepository = userRepository;
