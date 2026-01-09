@@ -11,11 +11,14 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    private String fromAddress = "noreply@cofound.com";
-    private String appUrl = "https://cofound-app-production.up.railway.app";
+    @Value("${spring.mail.username:noreply@cofound.com}")
+    private String fromAddress;
 
-    public EmailService() {
-        this.mailSender = null;
+    @Value("${app.url:https://cofound-app-production.up.railway.app}")
+    private String appUrl;
+
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
+        this.mailSender = mailSender;
     }
 
     public void sendVerificationEmail(String to, String username, String token) {
