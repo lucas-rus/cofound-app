@@ -17,8 +17,8 @@ public class EmailService {
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
-    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService() {
+        this.mailSender = null;
     }
 
     public void sendVerificationEmail(String to, String username, String token) {
