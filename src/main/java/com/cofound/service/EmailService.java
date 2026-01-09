@@ -9,8 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username:noreply@cofound.com}")
     private String fromAddress;
@@ -18,7 +17,15 @@ public class EmailService {
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     public void sendVerificationEmail(String to, String username, String token) {
+        if (mailSender == null) {
+            System.err.println("WARNING: Email service is not configured. Verification email not sent.");
+            return;
+        }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromAddress);
@@ -37,6 +44,7 @@ public class EmailService {
 
     //add this later for notifications
     public void sendApplicationStatusUpdate(String to, String projectTitle, String status) {
+        if (mailSender == null) return;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("your-email@gmail.com");
         message.setTo(to);
