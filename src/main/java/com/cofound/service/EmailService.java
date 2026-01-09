@@ -23,7 +23,7 @@ public class EmailService {
 
     public void sendVerificationEmail(String to, String username, String token) {
         if (mailSender == null) {
-            System.err.println("WARNING: Email service is not configured. Verification email not sent.");
+            System.out.println("EMAILS DISABLED. VERIFICATION LINK: " + appUrl + "/auth/verify?token=" + token);
             return;
         }
         try {
