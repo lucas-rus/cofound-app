@@ -23,10 +23,11 @@ public class EmailService {
 
     public void sendVerificationEmail(String to, String username, String token) {
         if (mailSender == null) {
-            System.out.println("EMAILS DISABLED. VERIFICATION LINK: " + appUrl + "/auth/verify?token=" + token);
+            System.err.println("Mail sender not configured!");
             return;
         }
         try {
+            String verificationLink = appUrl + "/auth/verify?token=" + token;
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromAddress);
             message.setTo(to);
@@ -34,9 +35,10 @@ public class EmailService {
             message.setText("Hello " + username + ",\n\n"
                     + "Thank you for registering with CoFound.\n\n"
                     + "Please verify your account by clicking the link below:\n"
-                    + appUrl + "/auth/verify?token=" + token + "\n\n"
+                    + verificationLink + "\n\n"
                     + "If you did not request this, you can ignore this email.");
             mailSender.send(message);
+            System.out.println("Verification email sent to " + to);
         } catch (Exception e) {
             System.err.println("Failed to send verification email: " + e.getMessage());
         }

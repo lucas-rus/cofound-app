@@ -35,3 +35,13 @@ build/
 # Application secrets
 src/main/resources/application.properties
 data/*.db
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+frontend/*.log
+
+# Uploads
+uploads/

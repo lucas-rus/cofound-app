@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Badge, Alert, Modal } from 'react-bootstrap';
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { FiTrash2, FiEdit2, FiSave, FiUser, FiLinkedin, FiGithub, FiGlobe, FiFileText } from 'react-icons/fi';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,9 @@ const Profile = () => {
   const [editForm, setEditForm] = useState({});
   const [selectedFile, setSelectedFile] = useState(null); // Profile Pic
   const [selectedCv, setSelectedCv] = useState(null); // CV
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
 
   useEffect(() => {
     fetchProfile();
@@ -132,6 +137,22 @@ const Profile = () => {
       console.error(e);
       alert("Failed to save profile details");
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await api.delete('/api/users/me');
+      logout();
+      navigate('/');
+    } catch (e) {
+      console.error(e);
+      alert("Failed to delete account. " + (e.response?.data || ""));
+    }
+  };
+
+  const openDeleteModal = () => {
+    setDeleteConfirmationText('');
+    setShowDeleteModal(true);
   };
 
   const avatarUrl = `https://robohash.org/${user?.username}?set=set3&bgset=bg2`;
@@ -261,13 +282,51 @@ const Profile = () => {
             </Card.Body>
           </Card>
 
-          {/* Projects Link */}
-          <div className="text-center">
+          {/* Projects Link & Delete Account */}
+          <div className="text-center d-flex flex-column gap-3">
              <Button variant="link" href={`/users/${user.id}`}>View Public Profile Page</Button>
+             
+             <div className="border-top pt-3 mt-2">
+                <Button variant="outline-danger" size="sm" onClick={openDeleteModal}>
+                  <FiTrash2 className="me-1"/> Delete My Account
+                </Button>
+             </div>
           </div>
 
         </Col>
       </Row>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger">Delete Account</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="danger">
+            <FiTrash2 className="me-2"/>
+            <strong>Warning:</strong> This action is permanent and cannot be undone. All your data, projects, and messages will be permanently removed.
+          </Alert>
+          <p>Please type <strong>delete</strong> to confirm.</p>
+          <Form.Control 
+            type="text" 
+            placeholder='Type "delete" here'
+            value={deleteConfirmationText}
+            onChange={(e) => setDeleteConfirmationText(e.target.value)}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={handleDeleteAccount}
+            disabled={deleteConfirmationText.toLowerCase() !== 'delete'}
+          >
+            Confirm Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
