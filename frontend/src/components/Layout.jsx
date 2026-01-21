@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navbar, Container, Nav, Dropdown, Button } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiLogOut, FiUser, FiGrid, FiPlusCircle, FiList } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiGrid, FiPlusCircle, FiList, FiShield, FiUsers } from 'react-icons/fi';
 
 const Layout = ({ children }) => {
   const { user, logout, loading } = useAuth(); // Add loading
@@ -36,9 +36,18 @@ const Layout = ({ children }) => {
                   <Nav.Link as={Link} to="/my-applications" className="d-flex align-items-center gap-2">
                     <FiList /> My Applications
                   </Nav.Link>
+                  <Nav.Link as={Link} to="/friends" className="d-flex align-items-center gap-2">
+                    <FiUsers /> My Network
+                  </Nav.Link>
+                  {user.role === 'ROLE_ADMIN' && (
+                    <Nav.Link as={Link} to="/admin" className="d-flex align-items-center gap-2 text-danger">
+                      <FiShield /> Admin
+                    </Nav.Link>
+                  )}
                 </>
               )}
             </Nav>
+            
             <Nav>
               {!loading && ( // Wrap the right side in !loading check
                 user ? (

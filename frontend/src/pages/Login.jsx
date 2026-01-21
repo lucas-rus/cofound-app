@@ -25,11 +25,23 @@ const Login = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error("Login error:", err);
-      const status = err.response?.status || 'N/A';
-      const statusText = err.response?.statusText || 'N/A';
-      const data = typeof err.response?.data === 'object' ? JSON.stringify(err.response?.data) : (err.response?.data || 'No data');
-      const msg = `Failed to login. Status: ${status} (${statusText}). Details: ${data}. Error: ${err.message}`;
-      setError(msg);
+      let errorMessage = "Something went wrong."; // Default if no specific message is found
+      if (err.response) { // Check if a response object exists
+        if (err.response.data) { // Prioritize specific data from backend
+          if (typeof err.response.data === 'string' && err.response.data.trim() !== '') {
+            errorMessage = err.response.data;
+          } else if (typeof err.response.data === 'object' && Object.keys(err.response.data).length > 0) {
+            errorMessage = Object.values(err.response.data).join(', ');
+          }
+        } else if (err.response.statusText && err.response.statusText.trim() !== '') {
+          // Fallback to status text if data is empty but statusText exists
+          errorMessage = err.response.statusText; // e.g., "Forbidden" for 403
+        }
+      } else if (err.message && err.message.trim() !== '') {
+        // Fallback to general Axios error message (e.g., "Network Error")
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     }
   };
 

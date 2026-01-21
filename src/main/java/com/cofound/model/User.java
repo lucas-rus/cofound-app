@@ -13,6 +13,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -23,6 +26,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max = 20, message = "Username cannot exceed 20 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_.-]*$", message = "Username can only contain letters, numbers, underscores, dots, and hyphens")
     @Column(unique = true, nullable = false)
     private String username;
 

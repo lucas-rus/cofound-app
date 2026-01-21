@@ -4,9 +4,13 @@ import com.cofound.dto.ProjectSummaryDto; // Shared DTO
 import com.cofound.model.Skill;
 import com.cofound.model.User;
 import com.cofound.model.Project;
+import com.cofound.model.ProjectHistory;
 import com.cofound.repository.ProjectRepository;
 import com.cofound.repository.SkillRepository;
 import com.cofound.repository.UserRepository;
+import com.cofound.repository.ProjectHistoryRepository;
+import com.cofound.repository.SkillEndorsementRepository;
+import com.cofound.repository.UserReviewRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,16 +34,39 @@ public class UserController {
     private final UserRepository userRepository;
     private final SkillRepository skillRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectHistoryRepository historyRepository;
+    private final SkillEndorsementRepository endorsementRepository;
+    private final UserReviewRepository reviewRepository;
 
     private String uploadDir = "uploads";
     
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
-    public UserController(UserRepository userRepository, SkillRepository skillRepository, ProjectRepository projectRepository) {
+    public UserController(UserRepository userRepository, SkillRepository skillRepository, ProjectRepository projectRepository, ProjectHistoryRepository historyRepository, SkillEndorsementRepository endorsementRepository, UserReviewRepository reviewRepository) {
         this.userRepository = userRepository;
         this.skillRepository = skillRepository;
         this.projectRepository = projectRepository;
+        this.historyRepository = historyRepository;
+        this.endorsementRepository = endorsementRepository;
+        this.reviewRepository = reviewRepository;
+    }
+
+    private PublicProfileDto createPublicProfileDto(User user) {
+        List<ProjectHistory> history = historyRepository.findByUserOrderByOccurredAtDesc(user);
+        
+        List<com.cofound.model.SkillEndorsement> allEndorsements = endorsementRepository.findByRecipient(user);
+        Map<String, List<EndorserDto>> endorsements = new HashMap<>();
+        
+        for (com.cofound.model.SkillEndorsement se : allEndorsements) {
+            String skill = se.getSkill().getName();
+            endorsements.computeIfAbsent(skill, k -> new ArrayList<>()).add(new EndorserDto(se.getEndorser()));
+        }
+
+        Double avgRating = reviewRepository.getAverageRating(user);
+        long reviewCount = reviewRepository.countByReviewee(user);
+        
+        return new PublicProfileDto(user, history, endorsements, avgRating, reviewCount);
     }
 
     @PostMapping("/me/profile-picture")
@@ -83,7 +106,7 @@ public class UserController {
             user.getUserProfile().setProfilePictureUrl(fileUrl);
             userRepository.save(user);
 
-            return ResponseEntity.ok(new PublicProfileDto(user));
+            return ResponseEntity.ok(createPublicProfileDto(user));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,7 +147,7 @@ public class UserController {
             user.getUserProfile().setCvUrl(fileUrl);
             userRepository.save(user);
 
-            return ResponseEntity.ok(new PublicProfileDto(user));
+            return ResponseEntity.ok(createPublicProfileDto(user));
 
         } catch (Exception e) {
             System.err.println("CV Upload Error: " + e.getMessage());
@@ -141,7 +164,8 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         String picUrl = user.getUserProfile() != null ? user.getUserProfile().getProfilePictureUrl() : null;
-        return ResponseEntity.ok(new MeDto(user.getId(), user.getUsername(), user.getEmail(), picUrl));
+        String role = user.getRoles().stream().findFirst().map(r -> r.getName().name()).orElse("ROLE_USER");
+        return ResponseEntity.ok(new MeDto(user.getId(), user.getUsername(), user.getEmail(), picUrl, role));
     }
 
     @GetMapping("/me/skills")
@@ -220,7 +244,7 @@ public class UserController {
     public ResponseEntity<PublicProfileDto> getUserProfile(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(new PublicProfileDto(user));
+        return ResponseEntity.ok(createPublicProfileDto(user));
     }
 
     @PutMapping("/me/profile")
@@ -237,6 +261,9 @@ public class UserController {
         }
 
         if (dto.bio != null) user.getUserProfile().setBio(dto.bio);
+        if (dto.lookingFor != null) user.getUserProfile().setLookingFor(dto.lookingFor);
+        if (dto.offering != null) user.getUserProfile().setOffering(dto.offering);
+        if (dto.commitmentLevel != null) user.getUserProfile().setCommitmentLevel(dto.commitmentLevel);
         if (dto.linkedInUrl != null) user.getUserProfile().setLinkedInUrl(dto.linkedInUrl);
         if (dto.websiteUrl != null) user.getUserProfile().setWebsiteUrl(dto.websiteUrl);
         if (dto.githubUrl != null) user.getUserProfile().setGithubUrl(dto.githubUrl);
@@ -244,7 +271,7 @@ public class UserController {
         if (dto.profilePictureUrl != null) user.getUserProfile().setProfilePictureUrl(dto.profilePictureUrl);
 
         userRepository.save(user);
-        return ResponseEntity.ok(new PublicProfileDto(user));
+        return ResponseEntity.ok(createPublicProfileDto(user));
     }
 
     static class MeDto {
@@ -252,12 +279,26 @@ public class UserController {
         public String username;
         public String email;
         public String profilePictureUrl;
+        public String role;
         
-        public MeDto(Long id, String username, String email, String profilePictureUrl) {
+        public MeDto(Long id, String username, String email, String profilePictureUrl, String role) {
             this.id = id;
             this.username = username;
             this.email = email;
             this.profilePictureUrl = profilePictureUrl;
+            this.role = role;
+        }
+    }
+
+    static class EndorserDto {
+        public Long id;
+        public String username;
+        public String profilePictureUrl;
+
+        public EndorserDto(User u) {
+            this.id = u.getId();
+            this.username = u.getUsername();
+            this.profilePictureUrl = u.getUserProfile() != null ? u.getUserProfile().getProfilePictureUrl() : null;
         }
     }
 
@@ -265,22 +306,34 @@ public class UserController {
         public Long id;
         public String username;
         public String bio;
+        public String lookingFor;
+        public String offering;
+        public String commitmentLevel;
         public String linkedInUrl;
         public String websiteUrl;
         public String githubUrl;
         public String cvUrl;
         public String profilePictureUrl;
+        public Double averageRating;
+        public long reviewCount;
         public List<String> skills;
         public List<ProjectSummaryDto> activeProjects;
         public List<ProjectSummaryDto> pastProjects;
+        public List<ProjectHistoryDto> projectHistory;
+        public Map<String, List<EndorserDto>> skillEndorsements;
 
-        public PublicProfileDto(User user) {
+        public PublicProfileDto(User user, List<ProjectHistory> historyList, Map<String, List<EndorserDto>> endorsements, Double avgRating, long reviewCount) {
             this.id = user.getId();
             this.username = user.getUsername();
             this.skills = user.getSkills().stream().map(Skill::getName).sorted().toList();
+            this.averageRating = avgRating != null ? avgRating : 0.0;
+            this.reviewCount = reviewCount;
             
             if (user.getUserProfile() != null) {
                 this.bio = user.getUserProfile().getBio();
+                this.lookingFor = user.getUserProfile().getLookingFor();
+                this.offering = user.getUserProfile().getOffering();
+                this.commitmentLevel = user.getUserProfile().getCommitmentLevel();
                 this.linkedInUrl = user.getUserProfile().getLinkedInUrl();
                 this.websiteUrl = user.getUserProfile().getWebsiteUrl();
                 this.githubUrl = user.getUserProfile().getGithubUrl();
@@ -304,11 +357,31 @@ public class UserController {
                     this.activeProjects.add(summary);
                 }
             }
+            
+            this.projectHistory = historyList != null ? historyList.stream().map(ProjectHistoryDto::new).collect(Collectors.toList()) : new ArrayList<>();
+            this.skillEndorsements = endorsements != null ? endorsements : new HashMap<>();
+        }
+    }
+
+    static class ProjectHistoryDto {
+        public String projectName;
+        public String status;
+        public String reason;
+        public String date;
+
+        public ProjectHistoryDto(ProjectHistory h) {
+            this.projectName = h.getProject().getTitle();
+            this.status = h.getStatus().name();
+            this.reason = h.getReason();
+            this.date = h.getOccurredAt().toString();
         }
     }
 
     static class UpdateProfileDto {
         public String bio;
+        public String lookingFor;
+        public String offering;
+        public String commitmentLevel;
         public String linkedInUrl;
         public String websiteUrl;
         public String githubUrl;

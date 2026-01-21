@@ -13,6 +13,10 @@ import ProjectDetails from './pages/ProjectDetails';
 import MyApplications from './pages/MyApplications';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
+import AdminDashboard from './pages/AdminDashboard';
+import SearchResults from './pages/SearchResults';
+import FriendsList from './pages/FriendsList';
+import DirectChat from './pages/DirectChat';
 
 function App() {
   return (
@@ -24,6 +28,26 @@ function App() {
             <Route path="/register" element={<Register />} />
             
             {/* Protected Routes */}
+            <Route path="/search" element={
+              <ProtectedRoute>
+                <SearchResults />
+              </ProtectedRoute>
+            } />
+            <Route path="/friends" element={
+              <ProtectedRoute>
+                <FriendsList />
+              </ProtectedRoute>
+            } />
+            <Route path="/messages/:userId" element={
+              <ProtectedRoute>
+                <DirectChat />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />

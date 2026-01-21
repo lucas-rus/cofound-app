@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Row, Col, Form, InputGroup, Tabs, Tab, Badge, Button } from 'react-bootstrap';
 import api from '../api/axiosConfig';
 import ProjectCard from '../components/ProjectCard';
+import PendingReviews from '../components/PendingReviews';
 import { FiSearch, FiFilter } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
@@ -73,6 +74,8 @@ const Dashboard = () => {
           </InputGroup>
         </div>
       </div>
+
+      <PendingReviews />
 
       <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4 custom-tabs">
         <Tab eventKey="explore" title="Explore">

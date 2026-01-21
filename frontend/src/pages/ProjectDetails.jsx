@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Badge, Button, Tabs, Tab, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button, Tabs, Tab, Alert, Spinner, Modal, Form } from 'react-bootstrap';
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
-import { FiCheckCircle, FiXCircle, FiUser, FiClock, FiMessageSquare } from 'react-icons/fi';
+import { FiCheckCircle, FiXCircle, FiUser, FiClock, FiMessageSquare, FiTrash2, FiLogOut, FiActivity } from 'react-icons/fi';
 import ProjectChat from '../components/ProjectChat';
+import ProjectUpdateCard from '../components/ProjectUpdateCard';
 import Avatar from '../components/Avatar';
 
 const ProjectDetails = () => {
@@ -18,21 +19,86 @@ const ProjectDetails = () => {
   const [applyLoading, setApplyLoading] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
-  // Check permissions
-  const isOwner = project && user && project.owner && project.owner.id === user.id;
-  const isMember = team.some(m => m.id === user?.id) || isOwner;
+      const [updates, setUpdates] = useState([]);
+      const [newUpdateTitle, setNewUpdateTitle] = useState(''); // NEW STATE FOR TITLE
+      const [newUpdateContent, setNewUpdateContent] = useState('');
+      const [newUpdateFile, setNewUpdateFile] = useState(null);
+      
+      const [showKickModal, setShowKickModal] = useState(false);
+      const [kickTarget, setKickTarget] = useState(null);
+      const [kickReason, setKickReason] = useState('');
+  
+      // Check permissions
+      const isOwner = project && user && project.owner && project.owner.id === user.id;
+      const isMember = team.some(m => m.id === user?.id) || isOwner;
+  
+      useEffect(() => {
+        fetchProjectDetails();
+        fetchUpdates();
+      }, [id]);
+  
+      useEffect(() => {
+        if (isOwner) {
+          fetchApplications();
+        } else if (project) {
+            fetchMyApplication();
+        }
+      }, [isOwner, project]); 
+  
+      const fetchUpdates = async () => {
+          try {
+              const res = await api.get(`/api/projects/${id}/updates`);
+              setUpdates(res.data);
+          } catch (e) {}
+      };
+  
+      const handlePostUpdate = async (e) => {
+          e.preventDefault();
+          if (!newUpdateTitle.trim() || !newUpdateContent.trim()) return; // Title is now required
+          try {
+              const formData = new FormData();
+              formData.append('title', newUpdateTitle); // APPEND TITLE
+              formData.append('content', newUpdateContent);
+              if (newUpdateFile) {
+                  formData.append('file', newUpdateFile);
+              }
+              await api.post(`/api/projects/${id}/updates`, formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' }
+              });
+              setNewUpdateTitle(''); // CLEAR TITLE
+              setNewUpdateContent('');
+              setNewUpdateFile(null);
+              fetchUpdates();
+          } catch (e) {
+              alert(e.response?.data || "Failed to post update"); // More robust error display
+          }
+      };
+    const handleLeave = async () => {
+      if (!window.confirm("Are you sure you want to leave this project?")) return;
+      try {
+          await api.post(`/api/projects/${id}/leave`);
+          window.location.reload(); // Refresh to update UI/permissions
+      } catch (e) {
+          alert(e.response?.data || "Failed to leave project");
+      }
+  };
 
-  useEffect(() => {
-    fetchProjectDetails();
-  }, [id]);
+  const openKickModal = (member) => {
+      setKickTarget(member);
+      setKickReason('');
+      setShowKickModal(true);
+  };
 
-  useEffect(() => {
-    if (isOwner) {
-      fetchApplications();
-    } else if (project) {
-        fetchMyApplication();
-    }
-  }, [isOwner, project]); 
+  const handleKick = async () => {
+      if (!kickTarget) return;
+      try {
+          await api.post(`/api/projects/${id}/kick`, { userId: kickTarget.id, reason: kickReason });
+          setShowKickModal(false);
+          fetchTeam();
+      } catch (e) {
+          alert(e.response?.data || "Failed to kick user");
+      }
+  };
 
   const fetchProjectDetails = async () => {
     try {
@@ -201,21 +267,106 @@ const ProjectDetails = () => {
                     <h6 className="fw-bold mb-3">Current Team</h6>
                     <div className="list-group list-group-flush">
                       {team.map(member => (
-                        <Link 
-                          key={member.id} 
-                          to={`/users/${member.id}`} 
-                          className="list-group-item list-group-item-action d-flex align-items-center border-0 px-2 py-2 rounded mb-1"
-                        >
-                          <Avatar user={member} size={32} className="me-3" />
-                          <span className="fw-medium text-dark">{member.username}</span>
-                        </Link>
+                        <div key={member.id} className="list-group-item border-0 px-2 py-2 rounded mb-1 d-flex align-items-center justify-content-between">
+                            <Link 
+                              to={`/users/${member.id}`} 
+                              className="d-flex align-items-center text-decoration-none text-dark flex-grow-1"
+                            >
+                              <Avatar user={member} size={32} className="me-3" />
+                              <span className="fw-medium">{member.username}</span>
+                            </Link>
+                            {isOwner && member.id !== user.id && (
+                                <Button variant="link" className="text-danger p-0" onClick={() => openKickModal(member)} title="Kick Member">
+                                    <FiTrash2 />
+                                </Button>
+                            )}
+                        </div>
                       ))}
                     </div>
+                    {isMember && !isOwner && (
+                        <div className="mt-3 border-top pt-3 text-center">
+                            <Button variant="outline-danger" size="sm" onClick={handleLeave}>
+                                <FiLogOut className="me-1"/> Leave Project
+                            </Button>
+                        </div>
+                    )}
                   </Card.Body>
                 </Card>
               )}
             </Col>
           </Row>
+        </Tab>
+
+        <Tab eventKey="updates" title={<span className="d-flex align-items-center gap-2"><FiActivity/> Updates</span>}>
+            <Container className="p-0">
+                {(isOwner || isMember) && (
+                    <Card className="card-custom mb-4">
+                        <Card.Body>
+                            <h6 className="fw-bold mb-3">Post an Update</h6>
+                            <Form onSubmit={handlePostUpdate}>
+                                <Form.Group className="mb-2">
+                                    <Form.Label>Update Title</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        placeholder="Brief summary of the update"
+                                        value={newUpdateTitle}
+                                        onChange={(e) => setNewUpdateTitle(e.target.value)}
+                                        maxLength={100}
+                                        required
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Max 100 characters.
+                                    </Form.Text>
+                                </Form.Group>
+                                <Form.Group className="mb-2">
+                                    <Form.Control 
+                                        as="textarea" rows={3} 
+                                        placeholder="What's new?"
+                                        value={newUpdateContent}
+                                        onChange={(e) => setNewUpdateContent(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab') {
+                                                e.preventDefault();
+                                                const { selectionStart, selectionEnd } = e.target;
+                                                const value = e.target.value;
+                                                const spaces = '     '; // 5 spaces
+                                                e.target.value = value.substring(0, selectionStart) + spaces + value.substring(selectionEnd);
+                                                setNewUpdateContent(e.target.value);
+                                                // Move cursor after the inserted spaces
+                                                e.target.selectionStart = e.target.selectionEnd = selectionStart + spaces.length;
+                                            }
+                                        }}
+                                        maxLength={3000}
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Max 3000 characters. Markdown is supported.
+                                    </Form.Text>
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Control 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => e.target.files && setNewUpdateFile(e.target.files[0])}
+                                    />
+                                </Form.Group>
+                                <Button type="submit" size="sm" variant="primary">Post Update</Button>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                )}
+                
+                {updates.length === 0 ? (
+                    <div className="text-center py-5 bg-white rounded shadow-sm">
+                        <p className="text-muted">No updates yet.</p>
+                    </div>
+                ) : (
+                    <div className="d-flex flex-column gap-3">
+                        {updates.map(u => (
+                            <ProjectUpdateCard key={u.id} update={u} onRefresh={fetchUpdates} />
+                        ))}
+                    </div>
+                )}
+            </Container>
         </Tab>
         
         {isMember && (
@@ -280,6 +431,31 @@ const ProjectDetails = () => {
           </Tab>
         )}
       </Tabs>
+
+      <Modal show={showKickModal} onHide={() => setShowKickModal(false)} centered>
+        <Modal.Header closeButton>
+            <Modal.Title className="text-danger">Remove Member</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <p>Are you sure you want to remove <strong>{kickTarget?.username}</strong> from the project?</p>
+            <Alert variant="warning" className="small">
+                This action will remove them immediately. Please provide a reason.
+            </Alert>
+            <Form.Group>
+                <Form.Label>Reason</Form.Label>
+                <Form.Control 
+                    as="textarea" rows={3} 
+                    value={kickReason} 
+                    onChange={(e) => setKickReason(e.target.value)}
+                    placeholder="e.g. Inactivity, Violation of terms..."
+                />
+            </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowKickModal(false)}>Cancel</Button>
+            <Button variant="danger" onClick={handleKick} disabled={!kickReason.trim()}>Remove Member</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

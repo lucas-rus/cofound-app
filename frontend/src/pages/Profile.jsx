@@ -4,9 +4,10 @@ import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FiTrash2, FiEdit2, FiSave, FiUser, FiLinkedin, FiGithub, FiGlobe, FiFileText } from 'react-icons/fi';
+import Avatar from '../components/Avatar';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewMessage] = useState('');
@@ -15,6 +16,9 @@ const Profile = () => {
   // Profile Data
   const [profileData, setProfileData] = useState({
     bio: '',
+    lookingFor: '',
+    offering: '',
+    commitmentLevel: '',
     linkedInUrl: '',
     websiteUrl: '',
     githubUrl: '',
@@ -42,6 +46,9 @@ const Profile = () => {
       setSkills(res.data.skills);
       setEditForm({
         bio: res.data.bio || '',
+        lookingFor: res.data.lookingFor || '',
+        offering: res.data.offering || '',
+        commitmentLevel: res.data.commitmentLevel || '',
         linkedInUrl: res.data.linkedInUrl || '',
         websiteUrl: res.data.websiteUrl || '',
         githubUrl: res.data.githubUrl || '',
@@ -133,6 +140,7 @@ const Profile = () => {
       setEditing(false);
       setSelectedFile(null);
       setSelectedCv(null);
+      await refreshUser();
     } catch(e) {
       console.error(e);
       alert("Failed to save profile details");
@@ -155,8 +163,6 @@ const Profile = () => {
     setShowDeleteModal(true);
   };
 
-  const avatarUrl = `https://robohash.org/${user?.username}?set=set3&bgset=bg2`;
-
   // Helper
   const ensureAbsoluteUrl = (url) => {
     if (!url) return '#';
@@ -177,18 +183,45 @@ const Profile = () => {
               </Button>
             </div>
             <Card.Body>
-              <img 
-                src={selectedFile ? URL.createObjectURL(selectedFile) : (profileData.profilePictureUrl || avatarUrl)} 
-                alt={user?.username}
-                className="rounded-circle border border-4 border-light shadow-sm mb-3"
-                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-              />
+              <div className="d-flex justify-content-center">
+                {selectedFile ? (
+                  <img 
+                    src={URL.createObjectURL(selectedFile)} 
+                    alt="Preview"
+                    className="rounded-circle border border-4 border-light shadow-sm mb-3"
+                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Avatar user={{ ...user, profilePictureUrl: profileData.profilePictureUrl }} size={100} className="border border-4 border-light shadow-sm mb-3" />
+                )}
+              </div>
               <h3 className="fw-bold">{user?.username}</h3>
               <p className="text-muted">{user?.email}</p>
               
               {!editing ? (
                 <>
                   <p className="text-secondary mt-3">{profileData.bio || "No bio yet."}</p>
+                  
+                  {(profileData.lookingFor || profileData.offering || profileData.commitmentLevel) && (
+                    <div className="text-start mt-4 bg-light p-3 rounded-3 border">
+                        {profileData.lookingFor && (
+                            <div className="mb-2">
+                                <strong className="text-primary">Looking For:</strong> <span className="text-dark">{profileData.lookingFor}</span>
+                            </div>
+                        )}
+                        {profileData.offering && (
+                            <div className="mb-2">
+                                <strong className="text-success">Offering:</strong> <span className="text-dark">{profileData.offering}</span>
+                            </div>
+                        )}
+                        {profileData.commitmentLevel && (
+                            <div className="d-flex align-items-center">
+                                <strong className="text-muted me-2">Commitment:</strong> <Badge bg="primary">{profileData.commitmentLevel}</Badge>
+                            </div>
+                        )}
+                    </div>
+                  )}
+
                   <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
                     {profileData.websiteUrl && <a href={ensureAbsoluteUrl(profileData.websiteUrl)} target="_blank" className="btn btn-sm btn-outline-dark"><FiGlobe className="me-1"/> Website</a>}
                     {profileData.githubUrl && <a href={ensureAbsoluteUrl(profileData.githubUrl)} target="_blank" className="btn btn-sm btn-outline-dark"><FiGithub className="me-1"/> GitHub</a>}
@@ -214,6 +247,40 @@ const Profile = () => {
                       value={editForm.bio} 
                       onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
                     />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Looking For (e.g. Technical Co-founder)</Form.Label>
+                    <Form.Control 
+                      as="textarea" rows={2}
+                      placeholder="Describe who you want to meet..."
+                      value={editForm.lookingFor} 
+                      onChange={(e) => setEditForm({...editForm, lookingFor: e.target.value})}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Offering (e.g. Marketing, Capital)</Form.Label>
+                    <Form.Control 
+                      as="textarea" rows={2}
+                      placeholder="Describe what you bring to the table..."
+                      value={editForm.offering} 
+                      onChange={(e) => setEditForm({...editForm, offering: e.target.value})}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Commitment Level</Form.Label>
+                    <Form.Select 
+                        value={editForm.commitmentLevel} 
+                        onChange={(e) => setEditForm({...editForm, commitmentLevel: e.target.value})}
+                    >
+                        <option value="">Select...</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Side Project">Side Project</option>
+                        <option value="Just Exploring">Just Exploring</option>
+                    </Form.Select>
                   </Form.Group>
 
                   <Row>

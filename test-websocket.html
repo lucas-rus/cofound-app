@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; background: #f9f9f9; }
+        .message { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+    </style>
+</head>
+<body>
+    <h2>WebSocket Notification Tester</h2>
+    <div>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+    </div>
+    <div id="status">Status: Disconnected</div>
+    <h3>Messages:</h3>
+    <div id="messages"></div>
+
+    <script>
+        var ws;
+        function connect() {
+            // Adjust the URL if your server port is different
+            ws = new WebSocket('ws://localhost:8080/ws/notifications');
+            
+            ws.onopen = function() {
+                document.getElementById('status').innerText = 'Status: Connected';
+                log('Connected to WebSocket server');
+            };
+            
+            ws.onmessage = function(event) {
+                log('Received: ' + event.data);
+            };
+            
+            ws.onclose = function() {
+                document.getElementById('status').innerText = 'Status: Disconnected';
+                log('Connection closed');
+            };
+
+            ws.onerror = function(err) {
+                log('Error: ' + err);
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+        }
+
+        function log(message) {
+            var console = document.getElementById('messages');
+            var p = document.createElement('div');
+            p.className = 'message';
+            p.innerText = new Date().toLocaleTimeString() + ' - ' + message;
+            console.appendChild(p);
+            console.scrollTop = console.scrollHeight;
+        }
+    </script>
+</body>
+</html>

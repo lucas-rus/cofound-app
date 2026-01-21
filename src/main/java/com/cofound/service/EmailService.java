@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,12 +23,17 @@ public class EmailService {
     }
 
     public void sendVerificationEmail(String to, String username, String token) {
+        String verificationLink = appUrl + "/auth/verify?token=" + token;
+        
+        // Keep the log for safety, but this will now run synchronously
+        System.out.println("Preparing to send verification email to: " + to);
+        System.out.println("Link: " + verificationLink);
+
         if (mailSender == null) {
-            System.err.println("Mail sender not configured!");
+            System.err.println("Mail sender not configured! Email skipped.");
             return;
         }
         try {
-            String verificationLink = appUrl + "/auth/verify?token=" + token;
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromAddress);
             message.setTo(to);

@@ -66,8 +66,12 @@ const CreateProject = () => {
                     placeholder="e.g., NextGen AI Healthcare" 
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    maxLength={50} // Added maxLength for frontend visual feedback
                     required 
                   />
+                  <Form.Text className="text-muted">
+                    Keep your title short and suggestive (max 50 characters).
+                  </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3">

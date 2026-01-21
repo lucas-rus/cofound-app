@@ -17,6 +17,14 @@ public class UserProfile {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(columnDefinition = "TEXT")
+    private String lookingFor; // NEW: What they want (e.g. Technical Co-founder)
+
+    @Column(columnDefinition = "TEXT")
+    private String offering;   // NEW: What they bring (e.g. Marketing, Capital)
+
+    private String commitmentLevel; // NEW: e.g. "Full-time", "Part-time"
+
     private String linkedInUrl;
     private String websiteUrl; // NEW
     private String githubUrl;  // NEW

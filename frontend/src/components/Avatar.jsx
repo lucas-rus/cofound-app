@@ -5,10 +5,21 @@ const Avatar = ({ user, size = 40, className = '' }) => {
   const username = user.username || '?';
   const initial = username.charAt(0).toUpperCase();
   
-  // Deterministic color based on username length/char
-  const colors = ['bg-primary', 'bg-secondary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-dark'];
-  const colorIndex = username.charCodeAt(0) % colors.length;
-  const bgColor = colors[colorIndex];
+  // Generate a deterministic color from the username
+  const generateColor = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // HSL: Hue = hash % 360, Saturation = 65-75%, Lightness = 35-45% (Darker for white text)
+    const h = Math.abs(hash % 360); 
+    const s = 70; 
+    const l = 40; 
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  };
+
+  const bgColor = generateColor(username);
 
   if (url) {
     return (
@@ -23,8 +34,15 @@ const Avatar = ({ user, size = 40, className = '' }) => {
 
   return (
     <div 
-      className={`rounded-circle ${bgColor} text-white d-flex align-items-center justify-content-center fw-bold ${className}`} 
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      className={`rounded-circle text-white d-flex align-items-center justify-content-center fw-bold ${className}`} 
+      style={{ 
+        width: size, 
+        height: size, 
+        fontSize: size * 0.4, 
+        backgroundColor: bgColor,
+        textShadow: '0 1px 2px rgba(0,0,0,0.2)', // subtle shadow for better readability
+        userSelect: 'none'
+      }}
     >
       {initial}
     </div>

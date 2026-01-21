@@ -1,0 +1,190 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+
+% Margins
+\geometry{margin=1in}
+
+% Code highlighting style
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\definecolor{commentgreen}{rgb}{0,0.6,0}
+\definecolor{keywordblue}{rgb}{0,0,0.6}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{codegray},
+    commentstyle=\color{commentgreen},
+    keywordstyle=\color{keywordblue},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+\lstset{style=mystyle}
+
+\title{\textbf{CoFound Application}\ \large Individual Project, 2025 - 2026 Instruction Manual}
+\author{Rus-Gheorghiu Lucas-Michael \\ Faculty of Computer Science \\ Year 2, Group 5}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+\textbf{CoFound} is a dedicated collaboration platform designed to bridge the gap between visionary startup founders and skilled professionals looking to join a team. The application is intended for students, developers, and entrepreneurs who wish to find the perfect co-founder or project partner.
+
+The main purpose is to facilitate meaningful connections through detailed profiles, skill matching, and project-based communication.
+
+The primary functionalities of the application include:
+\begin{itemize}
+    \item \textbf{User Profiling & Skills} – Users can create detailed profiles with biographies, professional links (LinkedIn, GitHub), and a list of technical skills.
+    \item \textbf{Project Management} – Founders can create project listings detailing their idea, required roles, and team size.
+    \item \textbf{Application System} – Interested candidates can apply to join projects, and owners can review, accept, or reject these applications.
+    \item \textbf{Real-time Communication} – Integrated chat functionality allows for direct communication between project members.
+\end{itemize}
+
+By using this application, users will benefit from a streamlined recruiting process and a centralized hub for managing startup collaborations.
+
+\section{Design}
+The application architecture is robust and modern, utilizing the following technologies:
+
+\begin{itemize}
+    \item \textbf{Backend:} Java Spring Boot (v3.2.5) providing a RESTful API.
+    \item \textbf{Frontend:} React.js (v18) with Bootstrap 5 for a responsive user interface.
+    \item \textbf{Database:} H2 Database (for local development persistence) / PostgreSQL (production ready).
+    \item \textbf{Security:} JWT (JSON Web Tokens) for stateless authentication and role-based access control.
+    \item \textbf{Build Tools:} Maven (Backend) and Vite (Frontend).
+\end{itemize}
+
+\subsection{Database Schema}
+The data model revolves around three core entities:
+\begin{itemize}
+    \item \textbf{User:} Stores authentication credentials, profile data, and contact information.
+    \item \textbf{Project:} Contains details about the startup idea, required team size, and status. It has a One-to-Many relationship with Applications.
+    \item \textbf{Skill:} A Many-to-Many relationship with Users, allowing for tagging and searching candidates based on expertise (e.g., Java, Python, Marketing).
+\end{itemize}
+
+\subsection{Security Implementation}
+Security is a priority for CoFound.
+\begin{itemize}
+    \item \textbf{Password Hashing:} All user passwords are encrypted using BCrypt before storage.
+    \item \textbf{Stateless Auth:} The API uses JWTs. Upon login, the server issues a token which the client presents in the Authorization header for subsequent requests.
+    \item \textbf{Role-Based Access:} Endpoints are protected so that only project owners can modify their projects or view private applications.
+\end{itemize}
+
+\section{Diagrams}
+\textit{(You can insert your UML diagrams here, such as Class or Use Case diagrams, to illustrate the system structure.)}
+
+% Example placeholder for an image
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{diagram.png}
+%     \caption{System Architecture Diagram}
+% \end{figure}
+
+\section{Implementation}
+To download and continue the development of the application, the client can follow these steps:
+
+\subsection{1. Cloning the Repository}
+\begin{lstlisting}[language=bash]
+git clone https://github.com/lucas-rus/cofound-app.git
+cd cofound-app
+\end{lstlisting}
+
+\subsection{2. Configuration (Critical)}
+For security, you must configure your own email credentials.
+\begin{enumerate}
+    \item Navigate to \texttt{src/main/resources/application.properties}.
+    \item Open the file and update the mail settings with your own Gmail App Password:
+\end{enumerate}
+\begin{lstlisting}[language=bash]
+spring.mail.username=YOUR_EMAIL@gmail.com
+spring.mail.password=YOUR_APP_PASSWORD
+\end{lstlisting}
+
+\subsection{3. Starting the Backend}
+Open a terminal in the project root:
+\begin{lstlisting}[language=bash]
+# Ensure Java 17 is used
+./start-backend.sh
+# OR manually:
+mvn spring-boot:run
+\end{lstlisting}
+The server will start on \texttt{http://localhost:8080}.
+
+\subsection{4. Starting the Frontend}
+Open a second terminal in the \texttt{frontend} folder:
+\begin{lstlisting}[language=bash]
+cd frontend
+npm install  # First time only
+npm run dev
+\end{lstlisting}
+The client will launch on \texttt{http://localhost:5173}.
+
+\section{Usage}
+
+\subsection{1. Authentication and Registration}
+Users can securely create an account by providing an email and password. A verification link is sent via email to ensure authenticity. Once verified, users log in using JWT-based authentication.
+
+\subsection{2. Interface Navigation}
+The GUI is designed for intuitive navigation:
+\begin{itemize}
+    \item \textbf{Dashboard:} The landing page displaying all available projects.
+    \item \textbf{Navigation Bar:} Provides quick access to "Create Project", "My Applications", and the User Profile.
+    \item \textbf{Profile Page:} A centralized hub for managing personal data and settings.
+\end{itemize}
+
+\subsection{3. Using Main Functions}
+
+\subsubsection{Profile Management}
+Users can personalize their presence on the platform:
+\begin{itemize}
+    \item \textbf{Data Entry:} Add a bio, upload a CV/Resume, and set a Profile Picture.
+    \item \textbf{Skill Tagging:} Users can add skills (e.g., "Java", "Marketing") which help in matching with projects.
+    \item \textbf{Account Control:} Users have full control to permanently delete their account and associated data via a secure confirmation modal.
+\end{itemize}
+
+\subsubsection{Project Creation & Workflow}
+Founders can post projects with specific requirements.
+\begin{itemize}
+    \item \textbf{Creation:} Define a title, description, and required skills.
+    \item \textbf{Application:} Users view project details and click "Apply".
+    \item \textbf{Status Tracking:} The status of an application transitions from \texttt{PENDING} $\rightarrow$ \texttt{ACCEPTED} or \texttt{REJECTED}.
+    \item \textbf{Review:} Project owners receive applications and can "Accept" or "Reject" them via the project dashboard.
+\end{itemize}
+
+\section{Usage Examples}
+\textit{(Screenshots of the application can be placed here.)}
+
+\subsection{Example 1: Creating a Project}
+The "Create Project" form validates input and ensures all necessary details like "Team Size" and "Category" are filled before submission.
+
+\subsection{Example 2: Account Deletion}
+To delete an account, the user must navigate to the Profile page, scroll to the bottom, and click "Delete Account". A modal appears requiring the user to type "delete" to confirm, preventing accidental data loss.
+
+\section{Conclusions and Next Steps}
+This application provides a robust solution for the startup ecosystem, allowing efficient team formation. Users benefit from an optimized and secure experience.
+
+The application can be improved by:
+\begin{itemize}
+    \item \textbf{Mobile Application:} Developing a native mobile app (React Native or Flutter) to allow users to manage applications on the go.
+    \item \textbf{Calendar Integration:} Integrating tools like Google Calendar or Calendly to schedule interviews directly within the chat.
+    \item \textbf{Premium Features:} Implementing a monetization model where founders can pay to highlight their projects for better visibility.
+    \item \textbf{Advanced Analytics:} Providing a dashboard for project owners to track views, clicks, and conversion rates of their project posts.
+\end{itemize}
+
+\end{document}

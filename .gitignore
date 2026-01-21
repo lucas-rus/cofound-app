@@ -36,6 +36,15 @@ build/
 src/main/resources/application.properties
 data/*.db
 
+# Frontend secrets
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/node_modules/
+frontend/dist/
+
 # OS files
 .DS_Store
 

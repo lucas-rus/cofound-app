@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +41,7 @@ public class AuthenticationController {
     private final VerificationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final VerificationService verificationService;
+    private final com.cofound.service.AnalyticsService analyticsService;
 
     // UPDATED CONSTRUCTOR
     public AuthenticationController(AuthenticationManager authenticationManager,
@@ -49,7 +51,8 @@ public class AuthenticationController {
                                     JwtService jwtService,
                                     VerificationTokenRepository tokenRepository,
                                     EmailService emailService,
-                                    VerificationService verificationService) {
+                                    VerificationService verificationService,
+                                    com.cofound.service.AnalyticsService analyticsService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -58,19 +61,28 @@ public class AuthenticationController {
         this.tokenRepository = tokenRepository;
         this.emailService = emailService;
         this.verificationService = verificationService;
+        this.analyticsService = analyticsService;
     }
 
     // UPDATED LOGIN METHOD
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String jwt = jwtService.generateToken(userDetails);
+            
+            String role = userDetails.getAuthorities().stream()
+                    .findFirst()
+                    .map(item -> item.getAuthority())
+                    .orElse("ROLE_USER");
+            
+            // Log analytics asynchronously
+            analyticsService.logUserActivity(loginDto.getUsername(), "LOGIN_SUCCESS");
 
-            return ResponseEntity.ok(new JwtResponseDto(jwt));
+            return ResponseEntity.ok(new JwtResponseDto(jwt, role));
         } catch (DisabledException e) {
             return ResponseEntity.status(403).body("Account is not verified. Please check your email.");
         } catch (BadCredentialsException e) {
@@ -80,7 +92,7 @@ public class AuthenticationController {
 
     // UPDATED REGISTER METHOD
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterDto registerDto) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterDto registerDto) {
         if (userRepository.existsByUsername(registerDto.getUsername())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
