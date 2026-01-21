@@ -20,6 +20,8 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (userId) {
+      setLoading(true); // Reset loading
+      setProfile(null); // Clear previous profile
       fetchProfile();
       checkFriendStatus();
       fetchReviews();

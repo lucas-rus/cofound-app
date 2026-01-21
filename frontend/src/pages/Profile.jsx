@@ -40,6 +40,7 @@ const Profile = () => {
   }, []);
 
   const fetchProfile = async () => {
+    setLoading(true); // Ensure loading is true
     try {
       const res = await api.get(`/api/users/${user.id}/profile`);
       setProfileData(res.data);
