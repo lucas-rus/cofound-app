@@ -19,7 +19,7 @@ public class JwtService {
     private final String SECRET_KEY;
     private static final long JWT_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
 
-    public JwtService(@Value("${jwt.secret}") String secretKey) {
+    public JwtService(@Value("${jwt.secret:DefaultSecretKeyForFallbackOnlyDoNotUseInProd123}") String secretKey) {
         this.SECRET_KEY = secretKey;
     }
 
