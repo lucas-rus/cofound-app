@@ -12,7 +12,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:noreply@cofound.com}")
+    @Value("${spring.mail.username}")
     private String fromAddress;
 
     @Value("${app.url:https://cofound-app-production.up.railway.app}")
@@ -22,6 +22,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @Async
     public void sendVerificationEmail(String to, String username, String token) {
         String verificationLink = appUrl + "/auth/verify?token=" + token;
         
