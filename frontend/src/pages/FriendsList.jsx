@@ -226,7 +226,18 @@ const FriendsList = () => {
             <Col key={friend.id}>
               <Card className="card-custom h-100">
                 <Card.Body className="d-flex align-items-center gap-3">
-                  <Avatar user={friend} size={50} />
+                  <div className="position-relative d-inline-block">
+                    <Avatar user={friend} size={50} />
+                    {friend.unreadCount > 0 && (
+                      <Badge 
+                        bg="danger" 
+                        pill 
+                        className="position-absolute top-0 start-100 translate-middle border border-light"
+                      >
+                        +{friend.unreadCount}
+                      </Badge>
+                    )}
+                  </div>
                   <div>
                     <h6 className="fw-bold mb-0">
                       <a href={`/users/${friend.id}`} className="text-decoration-none text-dark">{friend.username}</a>

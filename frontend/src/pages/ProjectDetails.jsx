@@ -25,27 +25,41 @@ const ProjectDetails = () => {
       const [newUpdateFile, setNewUpdateFile] = useState(null);
       
       const [showKickModal, setShowKickModal] = useState(false);
-      const [kickTarget, setKickTarget] = useState(null);
-      const [kickReason, setKickReason] = useState('');
-  
-      // Check permissions
-      const isOwner = project && user && project.owner && project.owner.id === user.id;
-      const isMember = team.some(m => m.id === user?.id) || isOwner;
-  
-      useEffect(() => {
-        fetchProjectDetails();
-        fetchUpdates();
-      }, [id]);
-  
-      useEffect(() => {
-        if (isOwner) {
-          fetchApplications();
-        } else if (project) {
-            fetchMyApplication();
-        }
-      }, [isOwner, project]); 
-  
-      const fetchUpdates = async () => {
+          const [kickTarget, setKickTarget] = useState(null);
+          const [kickReason, setKickReason] = useState('');
+          const [activeTab, setActiveTab] = useState('overview'); // NEW: Active tab state
+        
+          // Edit Project State
+          const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+          const [editProjectForm, setEditProjectForm] = useState({ title: '', description: '', teamSizeNeeded: 1, requiredSkills: [] });
+          const [editProjectSkill, setEditProjectSkill] = useState('');
+        
+          // Check permissions
+          const isOwner = project && user && project.owner && project.owner.id === user.id;
+          const isMember = team.some(m => m.id === user?.id) || isOwner;
+        
+          useEffect(() => {
+            fetchProjectDetails();
+            fetchUpdates();
+          }, [id]);
+        
+          useEffect(() => {
+            if (isOwner) {
+              fetchApplications();
+            } else if (project) {
+                fetchMyApplication();
+            }
+          }, [isOwner, project]); 
+        
+          // NEW: Handle Tab Selection
+          const handleTabSelect = (k) => {
+              setActiveTab(k);
+              if (k === 'chat' && project) {
+                  localStorage.setItem(`msg_count_${project.id}`, project.messageCount);
+              }
+          };
+        
+          const fetchUpdates = async () => {
           try {
               const res = await api.get(`/api/projects/${id}/updates`);
               setUpdates(res.data);
@@ -98,6 +112,46 @@ const ProjectDetails = () => {
       } catch (e) {
           alert(e.response?.data || "Failed to kick user");
       }
+  };
+
+  const handleOpenEditProjectModal = () => {
+      setEditProjectForm({
+          title: project.title,
+          description: project.description,
+          teamSizeNeeded: project.teamSizeNeeded,
+          requiredSkills: [...project.requiredSkills]
+      });
+      setEditProjectSkill('');
+      setShowEditProjectModal(true);
+  };
+
+  const handleEditProjectSubmit = async (e) => {
+      e.preventDefault();
+      try {
+          await api.put(`/api/projects/${id}`, editProjectForm);
+          setShowEditProjectModal(false);
+          fetchProjectDetails();
+      } catch (e) {
+          alert(e.response?.data || "Failed to update project");
+      }
+  };
+
+  const handleAddEditSkill = () => {
+      const trimmed = editProjectSkill.trim();
+      if (trimmed && !editProjectForm.requiredSkills.includes(trimmed)) {
+          setEditProjectForm({
+              ...editProjectForm,
+              requiredSkills: [...editProjectForm.requiredSkills, trimmed]
+          });
+          setEditProjectSkill('');
+      }
+  };
+
+  const handleRemoveEditSkill = (skillToRemove) => {
+      setEditProjectForm({
+          ...editProjectForm,
+          requiredSkills: editProjectForm.requiredSkills.filter(s => s !== skillToRemove)
+      });
   };
 
   const fetchProjectDetails = async () => {
@@ -183,6 +237,10 @@ const ProjectDetails = () => {
   if (loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
   if (!project) return <Alert variant="danger">Project not found</Alert>;
 
+  const storedCount = parseInt(localStorage.getItem(`msg_count_${id}`) || '0');
+  const newMessages = project ? Math.max(0, project.messageCount - storedCount) : 0;
+  const pendingAppsCount = isOwner ? project.pendingApplicationsCount : 0;
+
   return (
     <Container className="py-4">
       {msg.text && <Alert variant={msg.type} dismissible onClose={() => setMsg({})}>{msg.text}</Alert>}
@@ -202,13 +260,20 @@ const ProjectDetails = () => {
         </div>
       </div>
 
-      <Tabs defaultActiveKey="overview" className="mb-4 custom-tabs">
+      <Tabs activeKey={activeTab} onSelect={handleTabSelect} className="mb-4 custom-tabs">
         <Tab eventKey="overview" title="Overview">
           <Row>
             <Col md={8}>
               <Card className="card-custom mb-4">
                 <Card.Body>
-                  <h5 className="fw-bold mb-3">About the Project</h5>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h5 className="fw-bold mb-0">About the Project</h5>
+                    {isOwner && (
+                        <Button variant="outline-primary" size="sm" onClick={handleOpenEditProjectModal}>
+                            Edit Details
+                        </Button>
+                    )}
+                  </div>
                   <p className="text-secondary" style={{whiteSpace: 'pre-wrap'}}>{project.description}</p>
                   
                   <h6 className="fw-bold mt-4 mb-2">Required Skills</h6>
@@ -370,7 +435,12 @@ const ProjectDetails = () => {
         </Tab>
         
         {isMember && (
-            <Tab eventKey="chat" title={<span className="d-flex align-items-center gap-2"><FiMessageSquare/> Team Chat</span>}>
+            <Tab eventKey="chat" title={
+                <span className="d-flex align-items-center gap-2">
+                    <FiMessageSquare/> Team Chat
+                    {newMessages > 0 && <Badge bg="danger" pill>{newMessages}</Badge>}
+                </span>
+            }>
                 <Card className="card-custom">
                     <Card.Body>
                         <ProjectChat projectId={id} />
@@ -380,7 +450,12 @@ const ProjectDetails = () => {
         )}
 
         {isOwner && (
-          <Tab eventKey="applications" title={`Applications (${applications.filter(a => a.status === 'PENDING').length})`}>
+          <Tab eventKey="applications" title={
+              <span className="d-flex align-items-center gap-2">
+                  Applications
+                  {pendingAppsCount > 0 && <Badge bg="warning" text="dark" pill>{pendingAppsCount}</Badge>}
+              </span>
+          }>
              {applications.length === 0 ? (
                <div className="text-center py-5 bg-white rounded shadow-sm">
                  <p className="text-muted">No applications yet.</p>
@@ -391,9 +466,7 @@ const ProjectDetails = () => {
                    <Card key={app.id} className={`card-custom ${app.status !== 'PENDING' ? 'opacity-75' : ''}`}>
                      <Card.Body className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                         <div className="d-flex align-items-center gap-3">
-                          <div className="bg-light rounded-circle p-3">
-                            <FiUser size={24} className="text-primary"/>
-                          </div>
+                          <Avatar user={app.applicant} size={48} className="border" />
                           <div>
                             <Link to={`/users/${app.applicant.id}`} className="h5 mb-1 text-decoration-none">{app.applicant.username}</Link>
                             <div className="d-flex flex-wrap gap-1 mb-1">
@@ -455,6 +528,75 @@ const ProjectDetails = () => {
             <Button variant="secondary" onClick={() => setShowKickModal(false)}>Cancel</Button>
             <Button variant="danger" onClick={handleKick} disabled={!kickReason.trim()}>Remove Member</Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Edit Project Modal */}
+      <Modal show={showEditProjectModal} onHide={() => setShowEditProjectModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Project Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleEditProjectSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Title</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editProjectForm.title} 
+                onChange={(e) => setEditProjectForm({...editProjectForm, title: e.target.value})}
+                maxLength={50}
+                required 
+              />
+              <Form.Text className="text-muted">Max 50 characters.</Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control 
+                as="textarea" rows={6} 
+                value={editProjectForm.description} 
+                onChange={(e) => setEditProjectForm({...editProjectForm, description: e.target.value})}
+                required 
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Team Size Needed</Form.Label>
+              <Form.Control 
+                type="number" min="1" max="20"
+                value={editProjectForm.teamSizeNeeded} 
+                onChange={(e) => setEditProjectForm({...editProjectForm, teamSizeNeeded: parseInt(e.target.value)})}
+                required 
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Required Skills</Form.Label>
+              <div className="d-flex gap-2 mb-2">
+                <Form.Control 
+                  type="text" 
+                  placeholder="Add a skill" 
+                  value={editProjectSkill}
+                  onChange={(e) => setEditProjectSkill(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddEditSkill())}
+                />
+                <Button variant="outline-secondary" onClick={handleAddEditSkill}>Add</Button>
+              </div>
+              <div className="d-flex flex-wrap gap-2">
+                {editProjectForm.requiredSkills.map(skill => (
+                  <Badge key={skill} bg="primary" className="d-flex align-items-center gap-2 py-2 px-3 fw-normal">
+                    {skill}
+                    <FiXCircle className="cursor-pointer" onClick={() => handleRemoveEditSkill(skill)} />
+                  </Badge>
+                ))}
+              </div>
+            </Form.Group>
+
+            <div className="d-flex justify-content-end gap-2">
+                <Button variant="secondary" onClick={() => setShowEditProjectModal(false)}>Cancel</Button>
+                <Button type="submit" variant="primary">Save Changes</Button>
+            </div>
+          </Form>
+        </Modal.Body>
       </Modal>
     </Container>
   );

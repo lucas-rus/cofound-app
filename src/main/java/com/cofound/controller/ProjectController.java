@@ -27,16 +27,32 @@ public class ProjectController {
     private final NotificationRepository notificationRepository;
     private final UserReviewRepository reviewRepository;
     private final PendingReviewRepository pendingReviewRepository;
+    private final ProjectMessageRepository projectMessageRepository; // NEW INJECTION
 
     public ProjectController(ProjectRepository projectRepository, UserRepository userRepository,
                              ProjectHistoryRepository historyRepository, NotificationRepository notificationRepository,
-                             UserReviewRepository reviewRepository, PendingReviewRepository pendingReviewRepository) {
+                             UserReviewRepository reviewRepository, PendingReviewRepository pendingReviewRepository,
+                             ProjectMessageRepository projectMessageRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
         this.notificationRepository = notificationRepository;
         this.reviewRepository = reviewRepository;
         this.pendingReviewRepository = pendingReviewRepository;
+        this.projectMessageRepository = projectMessageRepository;
+    }
+
+    private ProjectSummaryDto convertToSummaryDto(Project project) {
+        String lastMessageAt = projectMessageRepository.findTopByProjectIdOrderBySentAtDesc(project.getId())
+                .map(m -> m.getSentAt().toString())
+                .orElse(null);
+        long messageCount = projectMessageRepository.countByProjectId(project.getId());
+        
+        long pendingApps = project.getApplications() == null ? 0 : project.getApplications().stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.PENDING)
+                .count();
+
+        return new ProjectSummaryDto(project, lastMessageAt, messageCount, pendingApps);
     }
 
     private void createPendingReview(User reviewer, User reviewee, Project project) {
@@ -57,7 +73,7 @@ public class ProjectController {
     @Transactional(readOnly = true)
     public ResponseEntity<List<ProjectSummaryDto>> getAllProjects() {
         List<ProjectSummaryDto> projects = projectRepository.findAll().stream()
-                .map(ProjectSummaryDto::new)
+                .map(this::convertToSummaryDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(projects);
     }
@@ -85,6 +101,36 @@ public class ProjectController {
         return ResponseEntity.ok(savedProject);
     }
 
+    @PutMapping("/{projectId}")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public ResponseEntity<?> updateProject(@PathVariable Long projectId, @Valid @RequestBody ProjectDto projectDto, Principal principal) {
+        Project project = projectRepository.findByIdWithMembersAndOwner(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!project.getOwner().equals(user)) {
+            return ResponseEntity.status(403).body("Only the project owner can edit project details.");
+        }
+
+        project.setDescription(projectDto.getDescription());
+        if (projectDto.getRequiredSkills() != null) {
+            project.setRequiredSkills(projectDto.getRequiredSkills());
+        }
+        
+        // Optionally allow updating team size or title if desired, currently restricting to description/skills based on request
+        if (projectDto.getTitle() != null && !projectDto.getTitle().isBlank()) {
+             project.setTitle(projectDto.getTitle());
+        }
+        if (projectDto.getTeamSizeNeeded() != null && projectDto.getTeamSizeNeeded() > 0) {
+             project.setTeamSizeNeeded(projectDto.getTeamSizeNeeded());
+        }
+
+        Project savedProject = projectRepository.save(project);
+        return ResponseEntity.ok(convertToSummaryDto(savedProject));
+    }
+
     @GetMapping("/available")
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
@@ -97,7 +143,7 @@ public class ProjectController {
                     int current = p.getMembers() != null ? p.getMembers().size() : 0;
                     return needed <= 0 || current < needed;
                 })
-                .map(ProjectSummaryDto::new)
+                .map(this::convertToSummaryDto)
                 .toList();
         return ResponseEntity.ok(available);
     }
@@ -134,7 +180,7 @@ public class ProjectController {
         });
 
         List<ProjectSummaryDto> dtos = filtered.stream()
-                .map(ProjectSummaryDto::new)
+                .map(this::convertToSummaryDto)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
@@ -187,7 +233,7 @@ public class ProjectController {
         // Deduplicate just in case
         List<ProjectSummaryDto> dtos = all.stream()
                 .distinct()
-                .map(ProjectSummaryDto::new)
+                .map(this::convertToSummaryDto)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
@@ -245,7 +291,7 @@ public class ProjectController {
 
         projectRepository.save(project);
 
-        return ResponseEntity.ok(new ProjectSummaryDto(project));
+        return ResponseEntity.ok(convertToSummaryDto(project));
     }
 
     @PostMapping("/{projectId}/leave")

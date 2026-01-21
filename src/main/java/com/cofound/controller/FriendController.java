@@ -13,6 +13,8 @@ import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.cofound.repository.DirectMessageRepository;
+
 @RestController
 @RequestMapping("/api/friends")
 public class FriendController {
@@ -20,11 +22,13 @@ public class FriendController {
     private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
     private final com.cofound.repository.ProjectRepository projectRepository;
+    private final DirectMessageRepository directMessageRepository;
 
-    public FriendController(FriendRequestRepository friendRequestRepository, UserRepository userRepository, com.cofound.repository.ProjectRepository projectRepository) {
+    public FriendController(FriendRequestRepository friendRequestRepository, UserRepository userRepository, com.cofound.repository.ProjectRepository projectRepository, DirectMessageRepository directMessageRepository) {
         this.friendRequestRepository = friendRequestRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
+        this.directMessageRepository = directMessageRepository;
     }
 
     @PostMapping("/request/{userId}")
@@ -103,7 +107,8 @@ public class FriendController {
         List<FriendDto> friends = friendships.stream()
                 .map(fr -> {
                     User friend = fr.getSender().equals(user) ? fr.getReceiver() : fr.getSender();
-                    return new FriendDto(friend);
+                    long unread = directMessageRepository.countUnreadMessagesFrom(user, friend);
+                    return new FriendDto(friend, unread);
                 })
                 .collect(Collectors.toList());
 
@@ -221,11 +226,17 @@ public class FriendController {
         public Long id;
         public String username;
         public String profilePictureUrl;
+        public long unreadCount;
 
         public FriendDto(User user) {
+            this(user, 0);
+        }
+
+        public FriendDto(User user, long unreadCount) {
             this.id = user.getId();
             this.username = user.getUsername();
             this.profilePictureUrl = user.getUserProfile() != null ? user.getUserProfile().getProfilePictureUrl() : null;
+            this.unreadCount = unreadCount;
         }
     }
 

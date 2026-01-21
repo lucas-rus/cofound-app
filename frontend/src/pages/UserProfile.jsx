@@ -253,7 +253,7 @@ const UserProfile = () => {
                            <Popover.Body className="p-2">
                              {endorsers && endorsers.map(e => (
                                <div key={e.id} className="d-flex align-items-center gap-2 mb-2">
-                                 <img src={e.profilePictureUrl || `https://robohash.org/${e.username}?set=set3&bgset=bg2`} className="rounded-circle" width="24" height="24" style={{objectFit:'cover'}}/>
+                                 <Avatar user={e} size={24} />
                                  <span className="small">{e.username}</span>
                                </div>
                              ))}
@@ -295,14 +295,14 @@ const UserProfile = () => {
                         <Card 
                             key={p.id} 
                             className="border-0 shadow-sm bg-white" 
-                            style={{cursor: 'pointer', transition: 'transform 0.2s', maxWidth: '400px', width: '100%'}}
+                            style={{cursor: 'pointer', transition: 'transform 0.2s', maxWidth: '350px', width: '100%'}}
                             onClick={() => navigate(`/projects/${p.id}`)}
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                           <Card.Body className="d-flex align-items-center justify-content-between p-3">
-                             <div className="d-flex align-items-center gap-3" style={{ height: '100%' }}>
-                                <div className="d-flex flex-column justify-content-center" style={{ height: '100%' }}>
+                             <div className="d-flex align-items-center gap-3">
+                                <div className="d-flex flex-column justify-content-center">
                                    <h6 className="fw-bold text-dark my-0">{p.title}</h6>
                                    <Badge bg="success" bg="opacity-75" className="fw-normal mt-1" style={{fontSize: '0.7rem'}}>Active</Badge>
                                 </div>
@@ -357,7 +357,7 @@ const UserProfile = () => {
                             <div key={r.id} className="border-bottom pb-3">
                                 <div className="d-flex justify-content-between">
                                     <div className="d-flex align-items-center gap-2">
-                                        <img src={r.reviewerPic || `https://robohash.org/${r.reviewerName}?set=set3`} className="rounded-circle" width="30" height="30" style={{objectFit:'cover'}}/>
+                                        <Avatar user={{ username: r.reviewerName, profilePictureUrl: r.reviewerPic }} size={30} />
                                         <div>
                                             <strong>{r.reviewerName}</strong>
                                             <span className="text-muted small ms-2">on {r.projectName}</span>

@@ -3,11 +3,28 @@ import { Card, Badge, Button, Stack } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FiUsers, FiTag, FiArrowRight } from 'react-icons/fi';
 
-const ProjectCard = ({ project }) => {
+const ProjectCard = ({ project, newMessages, pendingApps }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+      // localStorage update moved to ProjectDetails (Team Chat tab)
+      navigate(`/projects/${project.id}`);
+  };
+
   return (
-    <Card className="card-custom h-100 d-flex flex-column">
+    <Card className="card-custom h-100 d-flex flex-column position-relative">
+      <div className="position-absolute top-0 start-0 translate-middle d-flex flex-column gap-1 ms-3" style={{ zIndex: 1 }}>
+          {newMessages > 0 && (
+              <Badge bg="danger" pill className="shadow-sm">
+                +{newMessages}
+              </Badge>
+          )}
+          {pendingApps > 0 && (
+              <Badge bg="warning" text="dark" pill className="shadow-sm">
+                +{pendingApps}
+              </Badge>
+          )}
+      </div>
       <Card.Body className="d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start mb-2">
           <Card.Title className="fw-bold mb-0 text-truncate" style={{maxWidth: '70%'}}>
@@ -52,7 +69,7 @@ const ProjectCard = ({ project }) => {
           variant="outline-primary" 
           size="sm" 
           className="w-100 mt-auto d-flex align-items-center justify-content-center gap-2"
-          onClick={() => navigate(`/projects/${project.id}`)}
+          onClick={handleClick}
         >
           View Details <FiArrowRight />
         </Button>

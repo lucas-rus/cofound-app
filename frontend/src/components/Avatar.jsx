@@ -12,10 +12,10 @@ const Avatar = ({ user, size = 40, className = '' }) => {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // HSL: Hue = hash % 360, Saturation = 65-75%, Lightness = 35-45% (Darker for white text)
+    // HSL: Hue = hash % 360, Saturation = 60-80%, Lightness = 35-45% (Darker for white text)
     const h = Math.abs(hash % 360); 
-    const s = 70; 
-    const l = 40; 
+    const s = 60 + (Math.abs(hash) % 20); 
+    const l = 35 + (Math.abs(hash) % 10); 
     return `hsl(${h}, ${s}%, ${l}%)`;
   };
 

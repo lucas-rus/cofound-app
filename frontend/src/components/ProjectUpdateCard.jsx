@@ -70,7 +70,17 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
     }
   };
 
-  const handleDeleteUpdate = async () => { // NEW DELETE HANDLER
+  const handleDeleteComment = async (commentId) => {
+      if (!window.confirm("Delete this comment?")) return;
+      try {
+          await api.delete(`/api/projects/updates/comments/${commentId}`);
+          onRefresh();
+      } catch (e) {
+          alert("Failed to delete comment");
+      }
+  };
+
+  const handleDeleteUpdate = async () => {
       if (!window.confirm("Are you sure you want to delete this update?")) return;
       try {
           await api.delete(`/api/updates/${update.id}`);
@@ -79,6 +89,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
           alert(e.response?.data || "Failed to delete update");
       }
   };
+
 
   const handleEditUpdate = () => { // NEW EDIT HANDLER (placeholder for now)
       alert("Edit functionality coming soon!"); // Replace with actual modal/form logic
@@ -132,7 +143,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
                         <FiSettings />
                     </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
+                    <Dropdown.Menu style={{ minWidth: '200px' }}>
                         <Dropdown.Item onClick={handleOpenEditModal}>
                             <FiEdit className="me-2" /> Edit
                         </Dropdown.Item>
@@ -181,13 +192,22 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
         {showComments && (
             <div className="mt-3 bg-light p-3 rounded">
                 {update.comments.map(c => (
-                    <div key={c.id} className="mb-2 border-bottom pb-2">
+                    <div key={c.id} className="mb-2 position-relative group-hover">
                         <div className="d-flex align-items-center gap-2 mb-1">
-                            <img src={c.userPic || `https://robohash.org/${c.username}`} className="rounded-circle" width="24" height="24"/>
+                            <Avatar user={{ username: c.username, profilePictureUrl: c.userPic }} size={24} />
                             <strong className="small">{c.username}</strong>
                             <small className="text-muted" style={{fontSize: '0.7em'}}>{formatRelativeTime(c.createdAt)}</small>
+                            {user && user.id === c.userId && (
+                                <FiTrash2 
+                                    className="text-danger cursor-pointer ms-auto" 
+                                    size={14} 
+                                    style={{cursor: 'pointer'}}
+                                    onClick={() => handleDeleteComment(c.id)}
+                                    title="Delete comment"
+                                />
+                            )}
                         </div>
-                        <p className="mb-0 small" style={{ marginLeft: '2rem' }}>{c.content}</p> {/* Changed alignment */}
+                        <p className="mb-0 small" style={{ marginLeft: '2rem' }}>{c.content}</p>
                     </div>
                 ))}
                 

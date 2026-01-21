@@ -14,8 +14,15 @@ public class ProjectSummaryDto {
     public List<String> requiredSkills;
     public OwnerDto owner;
     public int membersCount;
+    public String lastMessageAt;
+    public long messageCount;
+    public long pendingApplicationsCount; // NEW
 
     public ProjectSummaryDto(Project project) {
+        this(project, null, 0, 0);
+    }
+
+    public ProjectSummaryDto(Project project, String lastMessageAt, long messageCount, long pendingApplicationsCount) {
         this.id = project.getId();
         this.title = project.getTitle();
         this.description = project.getDescription();
@@ -25,8 +32,10 @@ public class ProjectSummaryDto {
                 ? new ArrayList<>(project.getRequiredSkills())
                 : List.of();
         this.owner = new OwnerDto(project.getOwner());
-        // Include owner in the count
         this.membersCount = (project.getMembers() != null ? project.getMembers().size() : 0) + 1;
+        this.lastMessageAt = lastMessageAt;
+        this.messageCount = messageCount;
+        this.pendingApplicationsCount = pendingApplicationsCount;
     }
 
     public static class OwnerDto {

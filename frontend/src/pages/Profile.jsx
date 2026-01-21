@@ -76,7 +76,7 @@ const Profile = () => {
 
   const handleRemoveSkill = async (skillName) => {
     try {
-      const res = await api.delete(`/api/users/me/skills/${skillName}`);
+      const res = await api.delete(`/api/users/me/skills/${encodeURIComponent(skillName)}`);
       setSkills(res.data);
     } catch (e) {
       alert("Failed to remove skill");

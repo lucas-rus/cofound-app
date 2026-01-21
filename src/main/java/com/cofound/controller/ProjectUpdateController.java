@@ -149,6 +149,23 @@ public class ProjectUpdateController {
         return ResponseEntity.ok(new UpdateCommentDto(comment));
     }
 
+    @DeleteMapping("/updates/comments/{commentId}")
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, Principal principal) {
+        UpdateComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!comment.getUser().getId().equals(user.getId())) { // Compare IDs
+            return ResponseEntity.status(403).body("You can only delete your own comments.");
+        }
+
+        commentRepository.delete(comment);
+        return ResponseEntity.ok("Comment deleted successfully.");
+    }
+
     @DeleteMapping("/updates/{updateId}")
     @Transactional
     @PreAuthorize("isAuthenticated()")
@@ -251,6 +268,7 @@ public class ProjectUpdateController {
 
     static class UpdateCommentDto {
         public Long id;
+        public Long userId;
         public String username;
         public String userPic;
         public String content;
@@ -258,6 +276,7 @@ public class ProjectUpdateController {
 
         public UpdateCommentDto(UpdateComment c) {
             this.id = c.getId();
+            this.userId = c.getUser().getId();
             this.username = c.getUser().getUsername();
             this.userPic = c.getUser().getUserProfile() != null ? c.getUser().getUserProfile().getProfilePictureUrl() : null;
             this.content = c.getContent();

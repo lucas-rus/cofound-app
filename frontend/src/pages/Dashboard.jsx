@@ -135,11 +135,17 @@ const Dashboard = () => {
                  </div>
                ) : (
                  <Row xs={1} md={2} lg={3} className="g-4">
-                   {filterList(myProjects).map(project => (
-                     <Col key={project.id}>
-                       <ProjectCard project={project} />
-                     </Col>
-                   ))}
+                   {filterList(myProjects).map(project => {
+                     const storedCount = parseInt(localStorage.getItem(`msg_count_${project.id}`) || '0');
+                     const newMessages = Math.max(0, project.messageCount - storedCount);
+                     const pendingApps = project.owner.id === user.id ? project.pendingApplicationsCount : 0;
+                     
+                     return (
+                       <Col key={project.id}>
+                         <ProjectCard project={project} newMessages={newMessages} pendingApps={pendingApps} />
+                       </Col>
+                     );
+                   })}
                  </Row>
                )}
              </>

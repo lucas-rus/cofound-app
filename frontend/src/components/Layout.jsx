@@ -1,13 +1,49 @@
-import React, { useState } from 'react';
-import { Navbar, Container, Nav, Dropdown, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Navbar, Container, Nav, Dropdown, Button, Badge, OverlayTrigger, Popover, ListGroup } from 'react-bootstrap'; // Added OverlayTrigger, Popover, ListGroup
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiLogOut, FiUser, FiGrid, FiPlusCircle, FiList, FiShield, FiUsers } from 'react-icons/fi';
+import Avatar from './Avatar';
+import api from '../api/axiosConfig'; // Added api import
 
 const Layout = ({ children }) => {
-  const { user, logout, loading } = useAuth(); // Add loading
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [notifData, setNotifData] = useState({ totalNetwork: 0, details: [] }); // Updated state
+
+  useEffect(() => {
+      if (user) {
+          fetchNotifications();
+          const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+          return () => clearInterval(interval);
+      }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+      try {
+          const res = await api.get('/api/notifications/counts');
+          setNotifData(res.data);
+      } catch (e) {
+          console.error("Failed to fetch notifications");
+      }
+  };
+
+  const popover = (
+    <Popover id="popover-notifications">
+      <Popover.Header as="h3">Notifications</Popover.Header>
+      <Popover.Body className="p-0">
+        <ListGroup variant="flush">
+          {notifData.details.map((n, idx) => (
+            <ListGroup.Item key={idx} className="small">
+              <strong>{n.type}:</strong> {n.description}
+            </ListGroup.Item>
+          ))}
+          {notifData.details.length === 0 && <ListGroup.Item>No new notifications</ListGroup.Item>}
+        </ListGroup>
+      </Popover.Body>
+    </Popover>
+  );
 
   const handleLogout = () => {
     logout();
@@ -36,8 +72,15 @@ const Layout = ({ children }) => {
                   <Nav.Link as={Link} to="/my-applications" className="d-flex align-items-center gap-2">
                     <FiList /> My Applications
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/friends" className="d-flex align-items-center gap-2">
+                  <Nav.Link as={Link} to="/friends" className="d-flex align-items-center gap-2 position-relative">
                     <FiUsers /> My Network
+                    {notifData.totalNetwork > 0 && (
+                        <OverlayTrigger trigger={['hover', 'focus']} placement="bottom" overlay={popover}>
+                            <Badge bg="danger" pill className="ms-1 cursor-pointer" style={{fontSize: '0.6rem'}}>
+                                {notifData.totalNetwork}
+                            </Badge>
+                        </OverlayTrigger>
+                    )}
                   </Nav.Link>
                   {user.role === 'ROLE_ADMIN' && (
                     <Nav.Link as={Link} to="/admin" className="d-flex align-items-center gap-2 text-danger">
@@ -57,18 +100,7 @@ const Layout = ({ children }) => {
                     </Link>
                     <Dropdown align="end">
                       <Dropdown.Toggle variant="light" id="dropdown-basic" className="d-flex align-items-center gap-2 border-0 bg-transparent">
-                        {user.profilePictureUrl ? (
-                          <img 
-                            src={user.profilePictureUrl} 
-                            alt={user.username} 
-                            className="rounded-circle border" 
-                            style={{width: 32, height: 32, objectFit: 'cover'}}
-                          />
-                        ) : (
-                          <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
-                            {user.username?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
-                        )}
+                        <Avatar user={user} size={32} />
                         <span className="fw-medium">{user.username || 'User'}</span>
                       </Dropdown.Toggle>
 
