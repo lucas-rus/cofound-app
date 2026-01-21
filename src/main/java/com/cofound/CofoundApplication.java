@@ -15,12 +15,27 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+
 @SpringBootApplication
 @EnableAsync
 public class CofoundApplication {
 
+    @Value("${spring.datasource.url:N/A}")
+    private String dbUrl;
+
+    @Value("${spring.mail.username:N/A}")
+    private String mailUser;
+
     public static void main(String[] args) {
         SpringApplication.run(CofoundApplication.class, args);
+    }
+
+    @PostConstruct
+    public void debugConfig() {
+        System.out.println("DEBUG: Active DB URL: " + dbUrl);
+        System.out.println("DEBUG: Mail User: " + mailUser);
     }
 
     @Bean

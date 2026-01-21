@@ -12,7 +12,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:noreply@cofound.com}")
     private String fromAddress;
 
     @Value("${app.url:https://cofound-app-production.up.railway.app}")
