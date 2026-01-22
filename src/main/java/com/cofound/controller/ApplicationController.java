@@ -223,12 +223,14 @@ public class ApplicationController {
         public Long id;
         public String username;
         public String email;
+        public String profilePictureUrl; // NEW FIELD
         public List<String> skills;
 
         ApplicantDto(User user) {
             this.id = user.getId();
             this.username = user.getUsername();
             this.email = user.getEmail();
+            this.profilePictureUrl = user.getUserProfile() != null ? user.getUserProfile().getProfilePictureUrl() : null; // POPULATE IT
             this.skills = user.getSkills().stream()
                     .map(Skill::getName)
                     .sorted(String::compareToIgnoreCase)
