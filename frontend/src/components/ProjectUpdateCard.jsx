@@ -143,7 +143,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
                         <FiSettings />
                     </Dropdown.Toggle>
 
-                    <Dropdown.Menu style={{ minWidth: '200px' }}>
+                    <Dropdown.Menu style={{ minWidth: '400px' }}>
                         <Dropdown.Item onClick={handleOpenEditModal}>
                             <FiEdit className="me-2" /> Edit
                         </Dropdown.Item>
