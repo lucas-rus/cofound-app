@@ -1,15 +1,10 @@
 package com.cofound.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "update_comments")
-@Getter
-@Setter
 public class UpdateComment {
 
     @Id
@@ -29,4 +24,44 @@ public class UpdateComment {
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ProjectUpdate getProjectUpdate() {
+        return projectUpdate;
+    }
+
+    public void setProjectUpdate(ProjectUpdate projectUpdate) {
+        this.projectUpdate = projectUpdate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 }

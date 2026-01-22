@@ -1,17 +1,12 @@
 package com.cofound.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "friend_requests", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"sender_id", "receiver_id"})
 })
-@Getter
-@Setter
 public class FriendRequest {
 
     @Id
@@ -37,5 +32,45 @@ public class FriendRequest {
         PENDING,
         ACCEPTED,
         REJECTED
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
+
+    public User getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
+    }
+
+    public FriendRequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(FriendRequestStatus status) {
+        this.status = status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

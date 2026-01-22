@@ -2,8 +2,6 @@ package com.cofound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,8 +16,6 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
 public class User implements UserDetails {
 
     @Id
@@ -76,6 +72,92 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "members")
     private Set<Project> joinedProjects = new HashSet<>();
 
+
+    // --- Getters and Setters ---
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Set<Skill> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(Set<Skill> skills) {
+        this.skills = skills;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
+    public Set<ProjectApplication> getApplications() {
+        return applications;
+    }
+
+    public void setApplications(Set<ProjectApplication> applications) {
+        this.applications = applications;
+    }
+
+    public VerificationToken getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(VerificationToken verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public Set<Project> getJoinedProjects() {
+        return joinedProjects;
+    }
+
+    public void setJoinedProjects(Set<Project> joinedProjects) {
+        this.joinedProjects = joinedProjects;
+    }
 
     // --- UserDetails Methods ---
 

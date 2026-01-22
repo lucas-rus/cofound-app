@@ -1,15 +1,11 @@
 package com.cofound.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "update_likes", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"update_id", "user_id"})
 })
-@Getter
-@Setter
 public class UpdateLike {
 
     @Id
@@ -23,4 +19,28 @@ public class UpdateLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ProjectUpdate getProjectUpdate() {
+        return projectUpdate;
+    }
+
+    public void setProjectUpdate(ProjectUpdate projectUpdate) {
+        this.projectUpdate = projectUpdate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

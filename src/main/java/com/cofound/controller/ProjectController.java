@@ -1,7 +1,7 @@
 package com.cofound.controller;
 
 import com.cofound.dto.ProjectDto;
-import com.cofound.dto.ProjectSummaryDto; // Shared DTO
+import com.cofound.dto.ProjectSummaryDto;
 import com.cofound.model.*;
 import com.cofound.repository.*;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class ProjectController {
     private final NotificationRepository notificationRepository;
     private final UserReviewRepository reviewRepository;
     private final PendingReviewRepository pendingReviewRepository;
-    private final ProjectMessageRepository projectMessageRepository; // NEW INJECTION
+    private final ProjectMessageRepository projectMessageRepository;
 
     public ProjectController(ProjectRepository projectRepository, UserRepository userRepository,
                              ProjectHistoryRepository historyRepository, NotificationRepository notificationRepository,
@@ -57,8 +57,6 @@ public class ProjectController {
 
     private void createPendingReview(User reviewer, User reviewee, Project project) {
         if (reviewer.equals(reviewee)) return;
-        // Check if already reviewed
-        // ... (UserReview check would be good, but expensive. Assuming PendingReview check is enough).
         if (pendingReviewRepository.findByReviewerAndRevieweeAndProject(reviewer, reviewee, project).isEmpty()) {
             PendingReview pr = new PendingReview();
             pr.setReviewer(reviewer);
@@ -111,7 +109,137 @@ public class ProjectController {
         return ResponseEntity.ok(savedProject);
     }
 
-    // ... (updateProject, getAvailableProjects, getRecommendedProjects, getProjectTeam, getMyProjects - no changes needed)
+    @PutMapping("/{projectId}")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public ResponseEntity<?> updateProject(@PathVariable Long projectId, @Valid @RequestBody ProjectDto projectDto, Principal principal) {
+        Project project = projectRepository.findByIdWithMembersAndOwner(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!project.getOwner().equals(user)) {
+            return ResponseEntity.status(403).body("Only the project owner can edit project details.");
+        }
+
+        project.setDescription(projectDto.getDescription());
+        if (projectDto.getRequiredSkills() != null) {
+            project.setRequiredSkills(projectDto.getRequiredSkills());
+        }
+        
+        if (projectDto.getTitle() != null && !projectDto.getTitle().isBlank()) {
+             project.setTitle(projectDto.getTitle());
+        }
+        if (projectDto.getTeamSizeNeeded() != null && projectDto.getTeamSizeNeeded() > 0) {
+             project.setTeamSizeNeeded(projectDto.getTeamSizeNeeded());
+        }
+
+        Project savedProject = projectRepository.save(project);
+        return ResponseEntity.ok(convertToSummaryDto(savedProject));
+    }
+
+    @GetMapping("/available")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ProjectSummaryDto>> getAvailableProjects() {
+        List<Project> all = projectRepository.findAll();
+        List<ProjectSummaryDto> available = all.stream()
+                .filter(p -> "RECRUITING".equalsIgnoreCase(p.getStatus()))
+                .filter(p -> {
+                    int needed = p.getTeamSizeNeeded();
+                    int current = p.getMembers() != null ? p.getMembers().size() : 0;
+                    return needed <= 0 || current < needed;
+                })
+                .map(this::convertToSummaryDto)
+                .toList();
+        return ResponseEntity.ok(available);
+    }
+
+    @GetMapping("/recommended")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ProjectSummaryDto>> getRecommendedProjects(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<String> userSkills = user.getSkills().stream()
+                .map(s -> s.getName().toLowerCase())
+                .collect(Collectors.toList());
+
+        if (userSkills.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<Project> matching = projectRepository.findProjectsWithMatchingSkills(userSkills);
+        
+        List<Project> filtered = matching.stream()
+                .filter(p -> !p.getOwner().equals(user))
+                .filter(p -> !p.getMembers().contains(user))
+                .filter(p -> p.getApplications().stream().noneMatch(a -> a.getApplicant().equals(user)))
+                .collect(Collectors.toList());
+        
+        filtered.sort((p1, p2) -> {
+            long p1Matches = p1.getRequiredSkills().stream().map(String::toLowerCase).filter(userSkills::contains).count();
+            long p2Matches = p2.getRequiredSkills().stream().map(String::toLowerCase).filter(userSkills::contains).count();
+            return Long.compare(p2Matches, p1Matches);
+        });
+
+        List<ProjectSummaryDto> dtos = filtered.stream()
+                .map(this::convertToSummaryDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/{projectId}/team")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getProjectTeam(@PathVariable Long projectId, Principal principal) {
+        Project project = projectRepository.findByIdWithMembersAndOwner(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isMember = project.getMembers().contains(user) || project.getOwner().equals(user);
+
+        if (!isMember) {
+            return ResponseEntity.status(403).body("You do not have access to this project's team.");
+        }
+        List<Object> members = project.getMembers().stream()
+                .map(u -> new TeamMemberDto(u.getId(), u.getUsername(), u.getEmail(), 
+                        u.getUserProfile() != null ? u.getUserProfile().getProfilePictureUrl() : null))
+                .collect(Collectors.toList());
+        
+        boolean ownerInList = members.stream().anyMatch(m -> ((TeamMemberDto)m).id.equals(project.getOwner().getId()));
+        if (!ownerInList) {
+             String ownerPic = project.getOwner().getUserProfile() != null ? project.getOwner().getUserProfile().getProfilePictureUrl() : null;
+             members.add(0, new TeamMemberDto(project.getOwner().getId(), project.getOwner().getUsername(), project.getOwner().getEmail(), ownerPic));
+        }
+
+        return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/my-projects")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ProjectSummaryDto>> getMyProjects(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Project> owned = new ArrayList<>(user.getProjects());
+        List<Project> joined = new ArrayList<>(user.getJoinedProjects());
+        
+        List<Project> all = new ArrayList<>();
+        all.addAll(owned);
+        all.addAll(joined);
+
+        List<ProjectSummaryDto> dtos = all.stream()
+                .distinct()
+                .map(this::convertToSummaryDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
 
     @PostMapping("/{projectId}/complete")
     @PreAuthorize("isAuthenticated()")
@@ -130,7 +258,6 @@ public class ProjectController {
         project.setCompletedAt(java.time.Instant.now());
         project.setStatus("COMPLETED");
         
-        // History for Owner
         historyRepository.findByUserAndProjectAndEndedAtIsNull(project.getOwner(), project)
             .ifPresent(h -> {
                 h.setEndedAt(java.time.Instant.now());
@@ -139,7 +266,6 @@ public class ProjectController {
                 historyRepository.save(h);
             });
 
-        // History and Notifications for Members
         for (User m : project.getMembers()) {
             historyRepository.findByUserAndProjectAndEndedAtIsNull(m, project)
                 .ifPresent(h -> {
@@ -156,7 +282,6 @@ public class ProjectController {
             notificationRepository.save(n);
         }
 
-        // Pending Reviews (All to All)
         Set<User> team = new HashSet<>(project.getMembers());
         team.add(project.getOwner());
         for (User u1 : team) {
@@ -189,7 +314,6 @@ public class ProjectController {
             return ResponseEntity.badRequest().body("You are not a member of this project.");
         }
 
-        // History: Update the existing JOINED entry
         historyRepository.findByUserAndProjectAndEndedAtIsNull(user, project)
             .ifPresentOrElse(h -> {
                 h.setEndedAt(java.time.Instant.now());
@@ -207,15 +331,12 @@ public class ProjectController {
                 historyRepository.save(history);
             });
 
-
-        // Notification to Owner
         Notification notif = new Notification();
         notif.setRecipient(project.getOwner());
         notif.setContent(user.getUsername() + " has left your project '" + project.getTitle() + "'. Please rate them.");
         notif.setType(Notification.NotificationType.ALERT);
         notificationRepository.save(notif);
 
-        // Pending Reviews
         createPendingReview(user, project.getOwner(), project);
         createPendingReview(project.getOwner(), user, project);
 
@@ -257,7 +378,6 @@ public class ProjectController {
             return ResponseEntity.badRequest().body("User is not a member of this project.");
         }
 
-        // 1. History: Update the existing JOINED entry
         historyRepository.findByUserAndProjectAndEndedAtIsNull(target, project)
             .ifPresentOrElse(h -> {
                 h.setEndedAt(java.time.Instant.now());
@@ -277,15 +397,12 @@ public class ProjectController {
                 historyRepository.save(history);
             });
 
-
-        // 2. Notification to Target
         Notification notif = new Notification();
         notif.setRecipient(target);
         notif.setContent("You were removed from project '" + project.getTitle() + "'. Reason: " + kickDto.reason + ". You can rate your teammates.");
         notif.setType(Notification.NotificationType.ALERT);
         notificationRepository.save(notif);
 
-        // 3. Review (Owner reviews Target)
         UserReview review = new UserReview();
         review.setReviewer(owner);
         review.setReviewee(target);
@@ -294,7 +411,6 @@ public class ProjectController {
         review.setComment("Terminated from project: " + kickDto.reason);
         reviewRepository.save(review);
 
-        // 4. Pending Reviews & Notifications for Teammates
         createPendingReview(target, owner, project); // Target rates Owner
 
         for (User m : project.getMembers()) {
@@ -310,7 +426,6 @@ public class ProjectController {
             }
         }
 
-        // 5. Remove
         project.getMembers().remove(target);
         projectRepository.save(project);
         

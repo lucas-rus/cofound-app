@@ -18,6 +18,10 @@ import java.util.List; // NEW IMPORT
 @RequestMapping("/api/applications")
 public class ApplicationController {
 
+    private final ProjectApplicationRepository applicationRepository;
+    private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
     private final com.cofound.repository.NotificationRepository notificationRepository;
     private final com.cofound.repository.ProjectHistoryRepository historyRepository;
 

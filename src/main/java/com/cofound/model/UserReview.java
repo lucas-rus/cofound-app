@@ -1,17 +1,12 @@
 package com.cofound.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "user_reviews", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"reviewer_id", "reviewee_id", "project_id"})
 })
-@Getter
-@Setter
 public class UserReview {
 
     @Id
@@ -38,4 +33,60 @@ public class UserReview {
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getReviewer() {
+        return reviewer;
+    }
+
+    public void setReviewer(User reviewer) {
+        this.reviewer = reviewer;
+    }
+
+    public User getReviewee() {
+        return reviewee;
+    }
+
+    public void setReviewee(User reviewee) {
+        this.reviewee = reviewee;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 }

@@ -1,17 +1,10 @@
 package com.cofound.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
 public class VerificationToken {
 
     @Id
@@ -28,9 +21,43 @@ public class VerificationToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
+    public VerificationToken() {}
+
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
         this.expiryDate = Instant.now().plus(24, ChronoUnit.HOURS); // Token expires in 24 hours
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Instant getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Instant expiryDate) {
+        this.expiryDate = expiryDate;
     }
 }
