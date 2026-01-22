@@ -224,7 +224,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
         )}
       </Card.Body>
 
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Update</Modal.Title>
         </Modal.Header>
