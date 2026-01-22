@@ -27,7 +27,7 @@ const Avatar = ({ user, size = 40, className = '' }) => {
         src={url} 
         alt={username} 
         className={`rounded-circle border ${className}`} 
-        style={{ width: size, height: size, objectFit: 'cover' }}
+        style={{ width: size, height: size, minWidth: size, minHeight: size, objectFit: 'cover' }}
       />
     );
   }
@@ -38,6 +38,8 @@ const Avatar = ({ user, size = 40, className = '' }) => {
       style={{ 
         width: size, 
         height: size, 
+        minWidth: size, 
+        minHeight: size,
         fontSize: size * 0.4, 
         backgroundColor: bgColor,
         textShadow: '0 1px 2px rgba(0,0,0,0.2)', // subtle shadow for better readability

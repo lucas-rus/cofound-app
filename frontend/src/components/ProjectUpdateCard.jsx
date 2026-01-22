@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Form, Badge, Dropdown, Modal } from 'react-bootstrap';
+import { Link } from 'react-router-dom'; // IMPORT LINK
 import ReactMarkdown from 'react-markdown';
 import { FiHeart, FiMessageCircle, FiSend, FiSettings, FiEdit, FiTrash2, FiUpload, FiXCircle } from 'react-icons/fi';
 import api from '../api/axiosConfig';
@@ -128,8 +129,10 @@ const ProjectUpdateCard = ({ update, onRefresh, isOwner }) => {
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center mb-2"> {/* NEW WRAPPER */}
             <div className="d-flex align-items-center gap-2"> {/* Poster Info */}
-                <Avatar user={update.poster} size={32} />
-                <strong className="small">{update.poster.username}</strong>
+                <Link to={`/users/${update.poster.id}`} className="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                    <Avatar user={update.poster} size={32} />
+                    <strong className="small">{update.poster.username}</strong>
+                </Link>
                 <small className="text-muted">{formatRelativeTime(update.createdAt)}</small>
             </div>
             {canEdit && ( // NEW: Settings Dropdown for poster or owner

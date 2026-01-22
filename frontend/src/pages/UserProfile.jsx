@@ -360,13 +360,13 @@ const UserProfile = () => {
                         {reviews.map(r => (
                             <div key={r.id} className="border-bottom pb-3">
                                 <div className="d-flex justify-content-between">
-                                    <div className="d-flex align-items-center gap-2">
+                                    <Link to={`/users/${r.reviewerId}`} className="d-flex align-items-center gap-2 text-decoration-none text-dark">
                                         <Avatar user={{ username: r.reviewerName, profilePictureUrl: r.reviewerPic }} size={30} />
                                         <div>
                                             <strong>{r.reviewerName}</strong>
                                             <span className="text-muted small ms-2">on {r.projectName}</span>
                                         </div>
-                                    </div>
+                                    </Link>
                                     <div>
                                         {[...Array(5)].map((_, i) => (
                                             <FiStar key={i} className={i < r.rating ? "text-warning" : "text-muted"} style={{fill: i < r.rating ? 'currentColor' : 'none'}}/>

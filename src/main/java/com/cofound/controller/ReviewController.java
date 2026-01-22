@@ -108,6 +108,7 @@ public class ReviewController {
 
     static class ReviewDto {
         public Long id;
+        public Long reviewerId; // NEW
         public String reviewerName;
         public String reviewerPic;
         public String projectName;
@@ -117,6 +118,7 @@ public class ReviewController {
 
         public ReviewDto(UserReview r) {
             this.id = r.getId();
+            this.reviewerId = r.getReviewer().getId(); // NEW
             this.reviewerName = r.getReviewer().getUsername();
             this.reviewerPic = r.getReviewer().getUserProfile() != null ? r.getReviewer().getUserProfile().getProfilePictureUrl() : null;
             this.projectName = r.getProject().getTitle();

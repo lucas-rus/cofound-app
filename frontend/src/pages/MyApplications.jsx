@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Badge, Spinner } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom'; // IMPORT useNavigate
 import api from '../api/axiosConfig';
 
 const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // HOOK
 
   useEffect(() => {
     fetchMyApplications();
@@ -29,6 +31,12 @@ const MyApplications = () => {
     }
   };
 
+  const handleCardClick = (app) => {
+      if (app.status !== 'REJECTED') {
+          navigate(`/projects/${app.project.id}`);
+      }
+  };
+
   return (
     <Container className="py-4">
       <h2 className="fw-bold mb-4">My Applications</h2>
@@ -43,7 +51,11 @@ const MyApplications = () => {
         <Row xs={1} md={2} className="g-4">
           {applications.map(app => (
             <Col key={app.id}>
-              <Card className="card-custom h-100">
+              <Card 
+                className={`card-custom h-100 ${app.status !== 'REJECTED' ? 'cursor-pointer shadow-hover' : 'opacity-75'}`}
+                onClick={() => handleCardClick(app)}
+                style={{ transition: 'transform 0.2s, box-shadow 0.2s' }}
+              >
                 <Card.Body>
                   <div className="d-flex justify-content-between mb-3">
                     <h5 className="fw-bold mb-0">{app.project.title}</h5>
