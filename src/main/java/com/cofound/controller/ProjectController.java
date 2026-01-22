@@ -260,6 +260,7 @@ public class ProjectController {
         
         historyRepository.findByUserAndProjectAndEndedAtIsNull(project.getOwner(), project)
             .ifPresent(h -> {
+                if (h.getStartedAt() == null) h.setStartedAt(h.getOccurredAt());
                 h.setEndedAt(java.time.Instant.now());
                 h.setStatus(ProjectHistory.HistoryStatus.COMPLETED);
                 h.setOccurredAt(java.time.Instant.now());
@@ -269,6 +270,7 @@ public class ProjectController {
         for (User m : project.getMembers()) {
             historyRepository.findByUserAndProjectAndEndedAtIsNull(m, project)
                 .ifPresent(h -> {
+                    if (h.getStartedAt() == null) h.setStartedAt(h.getOccurredAt());
                     h.setEndedAt(java.time.Instant.now());
                     h.setStatus(ProjectHistory.HistoryStatus.COMPLETED);
                     h.setOccurredAt(java.time.Instant.now());
@@ -316,6 +318,7 @@ public class ProjectController {
 
         historyRepository.findByUserAndProjectAndEndedAtIsNull(user, project)
             .ifPresentOrElse(h -> {
+                if (h.getStartedAt() == null) h.setStartedAt(h.getOccurredAt());
                 h.setEndedAt(java.time.Instant.now());
                 h.setStatus(ProjectHistory.HistoryStatus.LEFT);
                 h.setOccurredAt(java.time.Instant.now());
@@ -380,6 +383,7 @@ public class ProjectController {
 
         historyRepository.findByUserAndProjectAndEndedAtIsNull(target, project)
             .ifPresentOrElse(h -> {
+                if (h.getStartedAt() == null) h.setStartedAt(h.getOccurredAt());
                 h.setEndedAt(java.time.Instant.now());
                 h.setStatus(ProjectHistory.HistoryStatus.KICKED);
                 h.setReason(kickDto.reason);
