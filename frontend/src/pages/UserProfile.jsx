@@ -292,7 +292,7 @@ const UserProfile = () => {
                 <Card className="card-custom mb-4 h-100">
                   <Card.Body>
                     <h5 className="fw-bold mb-3">Active Projects</h5>
-                    <div className="d-flex flex-column gap-2 justify-content-center align-items-center" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
+                    <div className="d-flex flex-column gap-2" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
                       {profile.activeProjects.map(p => (
                         <Card 
                             key={p.id} 
