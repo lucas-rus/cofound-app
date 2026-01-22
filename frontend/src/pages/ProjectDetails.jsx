@@ -427,7 +427,7 @@ const ProjectDetails = () => {
                 ) : (
                     <div className="d-flex flex-column gap-3">
                         {updates.map(u => (
-                            <ProjectUpdateCard key={u.id} update={u} onRefresh={fetchUpdates} />
+                            <ProjectUpdateCard key={u.id} update={u} onRefresh={fetchUpdates} isOwner={isOwner} />
                         ))}
                     </div>
                 )}

@@ -6,7 +6,7 @@ import api from '../api/axiosConfig';
 import Avatar from './Avatar'; // NEW IMPORT
 import { useAuth } from '../context/AuthContext'; // NEW IMPORT
 
-const ProjectUpdateCard = ({ update, onRefresh }) => {
+const ProjectUpdateCard = ({ update, onRefresh, isOwner }) => {
   const { user } = useAuth(); // NEW: Get current user for permission checks
   const [comment, setComment] = useState('');
   const [showComments, setShowComments] = useState(false);
@@ -24,8 +24,8 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
     ? update.content.substring(0, truncateLength) + '...' 
     : update.content;
 
-  // NEW: Check if current user is the poster
-  const isPoster = user && update.poster && user.id === update.poster.id;
+  // Check if current user is the poster OR the project owner
+  const canEdit = (user && update.poster && user.id === update.poster.id) || isOwner;
 
   const formatRelativeTime = (dateString) => {
     const date = new Date(dateString);
@@ -132,7 +132,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
                 <strong className="small">{update.poster.username}</strong>
                 <small className="text-muted">{formatRelativeTime(update.createdAt)}</small>
             </div>
-            {isPoster && ( // NEW: Settings Dropdown for poster
+            {canEdit && ( // NEW: Settings Dropdown for poster or owner
                 <Dropdown align="end">
                     <Dropdown.Toggle variant="light" size="sm" id={`dropdown-update-${update.id}`}>
                         <FiSettings />
