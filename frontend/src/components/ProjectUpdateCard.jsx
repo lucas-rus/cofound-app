@@ -192,8 +192,10 @@ const ProjectUpdateCard = ({ update, onRefresh, isOwner }) => {
                 {update.comments.map(c => (
                     <div key={c.id} className="mb-2 position-relative group-hover">
                         <div className="d-flex align-items-center gap-2 mb-1">
-                            <Avatar user={{ username: c.username, profilePictureUrl: c.userPic }} size={24} />
-                            <strong className="small">{c.username}</strong>
+                            <Link to={`/users/${c.userId}`} className="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                                <Avatar user={{ username: c.username, profilePictureUrl: c.userPic }} size={24} />
+                                <strong className="small">{c.username}</strong>
+                            </Link>
                             <small className="text-muted" style={{fontSize: '0.7em'}}>{formatRelativeTime(c.createdAt)}</small>
                             {user && user.id === c.userId && (
                                 <FiTrash2 

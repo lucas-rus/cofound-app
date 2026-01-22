@@ -1,9 +1,16 @@
 import React from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { FiUsers, FiTarget, FiTrendingUp } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 
 const LandingPage = () => {
+  const { user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="landing-page">
       {/* Hero Section */}
@@ -23,6 +30,31 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Mission Section (NEW) */}
+      <section className="py-5 bg-white border-bottom">
+        <Container>
+            <Row className="justify-content-center">
+                <Col lg={8} className="text-center">
+                    <h2 className="fw-bold mb-4">Our Mission</h2>
+                    <p className="text-muted fs-5 mb-4">
+                        Creating an environment for like-minded people to connect and collaborate for the purpose of innovation, 
+                        and with the promise that every idea will be taken into account & rewarded.
+                    </p>
+                    <p className="text-secondary">
+                        CoFound is a competitor to platforms like Upwork and Fiverr, but with a key difference: 
+                        instead of an intensely competitive market with unrealistic expectations, we offer a way to team up easily with like-minded and similarly skilled peers. 
+                        There are no "bosses" here—just people with ideas joining others with ideas.
+                    </p>
+                    <p className="text-secondary">
+                        We specifically aim to support students and early-career professionals who want to build their portfolio. 
+                        In today's tough job market, CoFound offers a platform to start a project, gain experience, and connect with people who understand 
+                        that the journey and the portfolio additions are just as valuable as the potential startup success.
+                    </p>
+                </Col>
+            </Row>
+        </Container>
       </section>
 
       {/* Features Section */}

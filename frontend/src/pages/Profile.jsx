@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Badge, Alert, Modal } from 'react-bootstrap';
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Added Link
 import { FiTrash2, FiEdit2, FiSave, FiUser, FiLinkedin, FiGithub, FiGlobe, FiFileText } from 'react-icons/fi';
 import Avatar from '../components/Avatar';
 
@@ -352,7 +352,7 @@ const Profile = () => {
 
           {/* Projects Link & Delete Account */}
           <div className="text-center d-flex flex-column gap-3">
-             <Button variant="link" href={`/users/${user.id}`}>View Public Profile Page</Button>
+             <Button variant="link" as={Link} to={`/users/${user.id}`}>View Public Profile Page</Button>
              
              <div className="border-top pt-3 mt-2">
                 <Button variant="outline-danger" size="sm" onClick={openDeleteModal}>

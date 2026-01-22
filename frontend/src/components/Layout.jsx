@@ -58,7 +58,7 @@ const Layout = ({ children }) => {
     <>
       <Navbar expand="lg" className="navbar-glass sticky-top mb-4">
         <Container>
-          <Navbar.Brand as={Link} to="/" className="fw-bold fs-4">
+          <Navbar.Brand as={Link} to={user ? "/dashboard" : "/"} className="fw-bold fs-4">
             <span className="text-primary">Co</span>Found
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
