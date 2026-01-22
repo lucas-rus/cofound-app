@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Badge, Spinner, ListGroup, Button, Modal, Form, OverlayTrigger, Popover } from 'react-bootstrap';
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
