@@ -52,9 +52,12 @@ const MyApplications = () => {
           {applications.map(app => (
             <Col key={app.id}>
               <Card 
-                className={`card-custom h-100 ${app.status !== 'REJECTED' ? 'cursor-pointer shadow-hover' : 'opacity-75'}`}
+                className={`card-custom h-100 ${app.status !== 'REJECTED' ? 'shadow-hover' : 'opacity-75'}`}
                 onClick={() => handleCardClick(app)}
-                style={{ transition: 'transform 0.2s, box-shadow 0.2s' }}
+                style={{ 
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: app.status !== 'REJECTED' ? 'pointer' : 'default'
+                }}
               >
                 <Card.Body>
                   <div className="d-flex justify-content-between mb-3">
