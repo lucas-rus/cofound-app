@@ -245,6 +245,15 @@ const ProjectDetails = () => {
     <Container className="py-4">
       {msg.text && <Alert variant={msg.type} dismissible onClose={() => setMsg({})}>{msg.text}</Alert>}
       
+      {myApplication && !isOwner && !isMember && myApplication.status === 'PENDING' && (
+          <Alert variant="warning" className="mb-4">
+              <div className="d-flex align-items-center">
+                  <FiClock size={24} className="me-2"/>
+                  <div><strong>Application Pending</strong><br/>Your application is currently under review by the project owner.</div>
+              </div>
+          </Alert>
+      )}
+
       <div className="d-flex justify-content-between align-items-start mb-4">
         <div>
           <h1 className="fw-bold mb-2">{project.title}</h1>
