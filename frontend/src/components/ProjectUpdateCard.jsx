@@ -83,16 +83,11 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
   const handleDeleteUpdate = async () => {
       if (!window.confirm("Are you sure you want to delete this update?")) return;
       try {
-          await api.delete(`/api/updates/${update.id}`);
+          await api.delete(`/api/projects/updates/${update.id}`);
           onRefresh();
       } catch (e) {
           alert(e.response?.data || "Failed to delete update");
       }
-  };
-
-
-  const handleEditUpdate = () => { // NEW EDIT HANDLER (placeholder for now)
-      alert("Edit functionality coming soon!"); // Replace with actual modal/form logic
   };
 
   const handleOpenEditModal = () => {
@@ -118,7 +113,7 @@ const ProjectUpdateCard = ({ update, onRefresh }) => {
           }
           formData.append('imageUrl', editImageUrl || '');
 
-          await api.put(`/api/updates/${update.id}`, formData, {
+          await api.put(`/api/projects/updates/${update.id}`, formData, {
               headers: { 'Content-Type': 'multipart/form-data' }
           });
           setShowEditModal(false);
