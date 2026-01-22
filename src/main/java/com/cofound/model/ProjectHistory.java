@@ -31,10 +31,14 @@ public class ProjectHistory {
     @Column(columnDefinition = "TEXT")
     private String reason; // Kick reason or leave note
 
+    private Instant startedAt; // NEW
+    private Instant endedAt;   // NEW
+
     @Column(nullable = false)
     private Instant occurredAt = Instant.now();
 
     public enum HistoryStatus {
+        JOINED,    // NEW
         COMPLETED, // Project finished
         KICKED,    // Removed by owner
         LEFT       // Left voluntarily

@@ -331,13 +331,15 @@ const UserProfile = () => {
                     <ListGroup.Item key={idx} className="d-flex justify-content-between align-items-center px-0">
                       <div>
                         <span className="fw-medium text-dark">{h.projectName}</span>
-                        <div className="small text-muted">{new Date(h.date).toLocaleDateString()}</div>
+                        <div className="small text-muted">
+                          {h.startedAt ? new Date(h.startedAt).toLocaleDateString() : 'Unknown'} - {h.endedAt ? new Date(h.endedAt).toLocaleDateString() : 'Present'}
+                        </div>
                       </div>
-                      <div>
+                      <div className="me-3">
                         {h.status === 'COMPLETED' ? (
                             <Badge bg="success">Completed</Badge> 
                         ) : (
-                            <Badge bg="light" text="dark" className="border">Ended</Badge>
+                            <Badge bg="secondary">Ended</Badge>
                         )}
                       </div>
                     </ListGroup.Item>

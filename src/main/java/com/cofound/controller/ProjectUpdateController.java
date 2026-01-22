@@ -170,7 +170,7 @@ public class ProjectUpdateController {
     @Transactional
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteUpdate(@PathVariable Long updateId, Principal principal) {
-        ProjectUpdate update = updateRepository.findById(updateId)
+        ProjectUpdate update = updateRepository.findByIdWithProjectAndOwner(updateId)
                 .orElseThrow(() -> new RuntimeException("Update not found"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -194,7 +194,7 @@ public class ProjectUpdateController {
                                         @Valid @ModelAttribute ProjectUpdatePostDto projectUpdatePostDto,
                                         @RequestParam(value = "file", required = false) MultipartFile file,
                                         Principal principal) {
-        ProjectUpdate update = updateRepository.findById(updateId)
+        ProjectUpdate update = updateRepository.findByIdWithProjectAndOwner(updateId)
                 .orElseThrow(() -> new RuntimeException("Update not found"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));

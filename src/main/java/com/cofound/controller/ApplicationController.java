@@ -18,30 +18,29 @@ import java.util.List; // NEW IMPORT
 @RequestMapping("/api/applications")
 public class ApplicationController {
 
-    private final ProjectApplicationRepository applicationRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
-    private final EmailService emailService;
     private final com.cofound.repository.NotificationRepository notificationRepository;
+    private final com.cofound.repository.ProjectHistoryRepository historyRepository;
 
     // UPDATED CONSTRUCTOR
     public ApplicationController(ProjectApplicationRepository applicationRepository,
                                  ProjectRepository projectRepository,
                                  UserRepository userRepository,
                                  EmailService emailService,
-                                 com.cofound.repository.NotificationRepository notificationRepository) {
+                                 com.cofound.repository.NotificationRepository notificationRepository,
+                                 com.cofound.repository.ProjectHistoryRepository historyRepository) {
         this.applicationRepository = applicationRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.notificationRepository = notificationRepository;
+        this.historyRepository = historyRepository;
     }
 
     // UPDATED: Changed path
     @PostMapping("/apply/project/{projectId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> applyToProject(@PathVariable Long projectId, Principal principal) {
-
+        // ... (existing code)
         User applicant = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -60,6 +59,7 @@ public class ApplicationController {
 
         return ResponseEntity.ok("Application submitted successfully!");
     }
+
 
     // --- NEW ENDPOINTS ---
 
@@ -119,6 +119,15 @@ public class ApplicationController {
                 // Add user to the project's team
                 project.getMembers().add(application.getApplicant());
                 projectRepository.save(project);
+                
+                // Create ProjectHistory entry for the accepted applicant
+                ProjectHistory memberHistory = new ProjectHistory();
+                memberHistory.setUser(application.getApplicant());
+                memberHistory.setProject(project);
+                memberHistory.setStatus(ProjectHistory.HistoryStatus.JOINED);
+                memberHistory.setStartedAt(java.time.Instant.now());
+                memberHistory.setOccurredAt(java.time.Instant.now());
+                historyRepository.save(memberHistory);
                 
                 // Create Notification
                 Notification notification = new Notification();

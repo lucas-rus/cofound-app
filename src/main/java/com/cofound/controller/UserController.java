@@ -367,13 +367,17 @@ public class UserController {
         public String projectName;
         public String status;
         public String reason;
-        public String date;
+        public String startedAt; // NEW
+        public String endedAt;   // NEW
+        public String occurredAt; // Renamed from 'date' for clarity
 
         public ProjectHistoryDto(ProjectHistory h) {
             this.projectName = h.getProject().getTitle();
             this.status = h.getStatus().name();
             this.reason = h.getReason();
-            this.date = h.getOccurredAt().toString();
+            this.startedAt = h.getStartedAt() != null ? h.getStartedAt().toString() : null;
+            this.endedAt = h.getEndedAt() != null ? h.getEndedAt().toString() : null;
+            this.occurredAt = h.getOccurredAt().toString();
         }
     }
 
