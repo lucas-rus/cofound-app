@@ -367,16 +367,31 @@ public class UserController {
         public String projectName;
         public String status;
         public String reason;
-        public String startedAt; // NEW
-        public String endedAt;   // NEW
-        public String occurredAt; // Renamed from 'date' for clarity
+        public String startedAt;
+        public String endedAt;
+        public String occurredAt;
 
         public ProjectHistoryDto(ProjectHistory h) {
             this.projectName = h.getProject().getTitle();
             this.status = h.getStatus().name();
             this.reason = h.getReason();
-            this.startedAt = h.getStartedAt() != null ? h.getStartedAt().toString() : null;
-            this.endedAt = h.getEndedAt() != null ? h.getEndedAt().toString() : null;
+            
+            if (h.getStartedAt() != null) {
+                this.startedAt = h.getStartedAt().toString();
+            } else if (h.getStatus() == ProjectHistory.HistoryStatus.JOINED) {
+                this.startedAt = h.getOccurredAt().toString();
+            } else {
+                this.startedAt = null;
+            }
+
+            if (h.getEndedAt() != null) {
+                this.endedAt = h.getEndedAt().toString();
+            } else if (h.getStatus() != ProjectHistory.HistoryStatus.JOINED) {
+                this.endedAt = h.getOccurredAt().toString();
+            } else {
+                this.endedAt = null;
+            }
+            
             this.occurredAt = h.getOccurredAt().toString();
         }
     }
