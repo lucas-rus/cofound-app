@@ -1,9 +1,11 @@
 package com.cofound.controller;
 
 import com.cofound.model.FriendRequest;
+import com.cofound.model.Notification;
 import com.cofound.model.User;
 import com.cofound.repository.DirectMessageRepository;
 import com.cofound.repository.FriendRequestRepository;
+import com.cofound.repository.NotificationRepository;
 import com.cofound.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -23,11 +24,13 @@ public class NotificationController {
     private final UserRepository userRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final DirectMessageRepository directMessageRepository;
+    private final NotificationRepository notificationRepository;
 
-    public NotificationController(UserRepository userRepository, FriendRequestRepository friendRequestRepository, DirectMessageRepository directMessageRepository) {
+    public NotificationController(UserRepository userRepository, FriendRequestRepository friendRequestRepository, DirectMessageRepository directMessageRepository, NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.friendRequestRepository = friendRequestRepository;
         this.directMessageRepository = directMessageRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @GetMapping("/counts")
@@ -51,7 +54,14 @@ public class NotificationController {
             details.add(new NotificationDetailDto("Message", count + " unread from " + sender.getUsername()));
         }
 
-        long total = requests.size() + directMessageRepository.countUnreadMessages(user);
+        // General Notifications (Alerts/Success)
+        List<Notification> generalNotifs = notificationRepository.findByRecipientAndIsReadFalse(user);
+        for (Notification n : generalNotifs) {
+            String typeLabel = n.getType() == Notification.NotificationType.SUCCESS ? "Success" : "Alert";
+            details.add(new NotificationDetailDto(typeLabel, n.getContent()));
+        }
+
+        long total = requests.size() + directMessageRepository.countUnreadMessages(user) + generalNotifs.size();
 
         return ResponseEntity.ok(new NotificationResponseDto(total, details));
     }

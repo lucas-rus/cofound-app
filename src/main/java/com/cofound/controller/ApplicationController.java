@@ -22,16 +22,19 @@ public class ApplicationController {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final com.cofound.repository.NotificationRepository notificationRepository;
 
     // UPDATED CONSTRUCTOR
     public ApplicationController(ProjectApplicationRepository applicationRepository,
                                  ProjectRepository projectRepository,
                                  UserRepository userRepository,
-                                 EmailService emailService) {
+                                 EmailService emailService,
+                                 com.cofound.repository.NotificationRepository notificationRepository) {
         this.applicationRepository = applicationRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.notificationRepository = notificationRepository;
     }
 
     // UPDATED: Changed path
@@ -116,9 +119,23 @@ public class ApplicationController {
                 // Add user to the project's team
                 project.getMembers().add(application.getApplicant());
                 projectRepository.save(project);
+                
+                // Create Notification
+                Notification notification = new Notification();
+                notification.setRecipient(application.getApplicant());
+                notification.setContent("Your application for '" + project.getTitle() + "' was ACCEPTED!");
+                notification.setType(Notification.NotificationType.SUCCESS);
+                notificationRepository.save(notification);
 
             } else if ("REJECTED".equalsIgnoreCase(normalizedStatus)) {
                 application.setStatus(ApplicationStatus.REJECTED);
+                
+                // Create Notification
+                Notification notification = new Notification();
+                notification.setRecipient(application.getApplicant());
+                notification.setContent("Your application for '" + project.getTitle() + "' was REJECTED.");
+                notification.setType(Notification.NotificationType.ALERT);
+                notificationRepository.save(notification);
             } else {
                 return ResponseEntity.badRequest().body("Invalid status.");
             }
