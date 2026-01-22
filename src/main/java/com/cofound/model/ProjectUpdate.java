@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "project_updates")
@@ -32,6 +34,12 @@ public class ProjectUpdate {
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
+
+    @OneToMany(mappedBy = "projectUpdate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UpdateLike> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "projectUpdate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UpdateComment> comments = new ArrayList<>();
 
     // --- Getters and Setters ---
 
@@ -89,5 +97,21 @@ public class ProjectUpdate {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<UpdateLike> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(List<UpdateLike> likes) {
+        this.likes = likes;
+    }
+
+    public List<UpdateComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<UpdateComment> comments) {
+        this.comments = comments;
     }
 }
