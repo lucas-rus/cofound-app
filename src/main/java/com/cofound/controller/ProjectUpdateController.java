@@ -158,7 +158,7 @@ public class ProjectUpdateController {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!comment.getUser().getId().equals(user.getId())) { // Compare IDs
+        if (!comment.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body("You can only delete your own comments.");
         }
 
@@ -175,9 +175,9 @@ public class ProjectUpdateController {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if user is the poster or the project owner
-        boolean isPoster = update.getPoster().equals(user);
-        boolean isProjectOwner = update.getProject().getOwner().equals(user);
+        // Check if user is the poster or the project owner using IDs
+        boolean isPoster = update.getPoster().getId().equals(user.getId());
+        boolean isProjectOwner = update.getProject().getOwner().getId().equals(user.getId());
 
         if (!isPoster && !isProjectOwner) {
             return ResponseEntity.status(403).body("Only the poster or project owner can delete this update.");
@@ -199,9 +199,9 @@ public class ProjectUpdateController {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if user is the poster or the project owner
-        boolean isPoster = update.getPoster().equals(user);
-        boolean isProjectOwner = update.getProject().getOwner().equals(user);
+        // Check if user is the poster or the project owner using IDs
+        boolean isPoster = update.getPoster().getId().equals(user.getId());
+        boolean isProjectOwner = update.getProject().getOwner().getId().equals(user.getId());
 
         if (!isPoster && !isProjectOwner) {
             return ResponseEntity.status(403).body("Only the poster or project owner can edit this update.");
