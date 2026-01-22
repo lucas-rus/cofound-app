@@ -239,6 +239,7 @@ const Profile = () => {
                       onChange={handleFileChange}
                       accept="image/*"
                     />
+                    <Form.Text className="text-muted">Max size: 2MB</Form.Text>
                   </Form.Group>
 
                   <Form.Group className="mb-3">
