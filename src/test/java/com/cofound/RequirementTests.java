@@ -32,6 +32,21 @@ public class RequirementTests {
     private UserRepository userRepository;
 
     @Mock
+    private com.cofound.repository.ProjectHistoryRepository historyRepository;
+
+    @Mock
+    private com.cofound.repository.NotificationRepository notificationRepository;
+
+    @Mock
+    private com.cofound.repository.UserReviewRepository reviewRepository;
+
+    @Mock
+    private com.cofound.repository.PendingReviewRepository pendingReviewRepository;
+
+    @Mock
+    private com.cofound.repository.ProjectMessageRepository projectMessageRepository;
+
+    @Mock
     private Principal principal;
 
     @InjectMocks

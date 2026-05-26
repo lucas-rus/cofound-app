@@ -1,5 +1,7 @@
 package com.cofound.controller;
 
+import com.cofound.algorithm.KMPMatcher;
+import com.cofound.algorithm.RedBlackTree;
 import com.cofound.dto.ProjectDto;
 import com.cofound.dto.ProjectSummaryDto;
 import com.cofound.model.*;
@@ -217,6 +219,54 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ProjectSummaryDto>> searchProjects(
+            @RequestParam(value = "q", required = false) String query,
+            @RequestParam(value = "minSize", required = false) Integer minSize,
+            @RequestParam(value = "maxSize", required = false) Integer maxSize) {
+        
+        List<Project> candidates;
+        
+        if (minSize != null || maxSize != null) {
+            RedBlackTree<Project> localTree = new RedBlackTree<>();
+            List<Project> activeProjects = projectRepository.findAll();
+            for (Project p : activeProjects) {
+                if ("RECRUITING".equalsIgnoreCase(p.getStatus())) {
+                    localTree.insert(p.getTeamSizeNeeded(), p);
+                }
+            }
+            int min = minSize != null ? minSize : 0;
+            int max = maxSize != null ? maxSize : Integer.MAX_VALUE;
+            candidates = localTree.getRange(min, max);
+        } else {
+            candidates = projectRepository.findAll();
+        }
+
+        if (query != null && !query.isBlank()) {
+            candidates = candidates.stream()
+                .filter(p -> "RECRUITING".equalsIgnoreCase(p.getStatus()))
+                .filter(p -> 
+                    KMPMatcher.contains(p.getTitle(), query, true) || 
+                    KMPMatcher.contains(p.getDescription(), query, true) || 
+                    (p.getRequiredSkills() != null && p.getRequiredSkills().stream()
+                        .anyMatch(skill -> KMPMatcher.contains(skill, query, true)))
+                )
+                .collect(Collectors.toList());
+        } else {
+            candidates = candidates.stream()
+                .filter(p -> "RECRUITING".equalsIgnoreCase(p.getStatus()))
+                .collect(Collectors.toList());
+        }
+
+        List<ProjectSummaryDto> results = candidates.stream()
+                .map(this::convertToSummaryDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(results);
     }
 
     @GetMapping("/my-projects")

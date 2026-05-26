@@ -17,6 +17,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import SearchResults from './pages/SearchResults';
 import FriendsList from './pages/FriendsList';
 import DirectChat from './pages/DirectChat';
+import DataStructuresVisualizer from './pages/DataStructuresVisualizer';
 
 function App() {
   return (
@@ -77,6 +78,11 @@ function App() {
             <Route path="/users/:userId" element={
               <ProtectedRoute>
                 <UserProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/visualizer" element={
+              <ProtectedRoute>
+                <DataStructuresVisualizer />
               </ProtectedRoute>
             } />
           </Routes>

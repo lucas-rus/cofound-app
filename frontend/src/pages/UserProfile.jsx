@@ -306,7 +306,7 @@ const UserProfile = () => {
                              <div className="d-flex align-items-center gap-3">
                                 <div className="d-flex flex-column justify-content-center">
                                    <h6 className="fw-bold text-dark my-0">{p.title}</h6>
-                                   <Badge bg="success" bg="opacity-75" className="fw-normal mt-1" style={{fontSize: '0.7rem'}}>Active</Badge>
+                                   <Badge bg="success" className="bg-opacity-75 fw-normal mt-1" style={{fontSize: '0.7rem'}}>Active</Badge>
                                 </div>
                              </div>
                              <FiArrowRight className="text-muted" />

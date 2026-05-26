@@ -82,6 +82,9 @@ const Layout = ({ children }) => {
                         </OverlayTrigger>
                     )}
                   </Nav.Link>
+                  <Nav.Link as={Link} to="/visualizer" className="d-flex align-items-center gap-2">
+                    <FiGrid /> DS Visualizer
+                  </Nav.Link>
                   {user.role === 'ROLE_ADMIN' && (
                     <Nav.Link as={Link} to="/admin" className="d-flex align-items-center gap-2 text-danger">
                       <FiShield /> Admin

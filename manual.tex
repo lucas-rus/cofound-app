@@ -135,6 +135,24 @@ npm run dev
 \end{lstlisting}
 The client will launch on \texttt{http://localhost:5173}.
 
+\subsection{5. Deploying the Backend on Railway}
+To host the Spring Boot backend on a cloud provider like Railway:
+\begin{enumerate}
+    \item Connect your GitHub repository to a new service on Railway.
+    \item In the Railway project panel, provision a new \textbf{PostgreSQL} database.
+    \item Link the PostgreSQL service to your Spring Boot backend service. Railway will automatically inject database environment credentials.
+    \item Set the following environment variables on your Spring Boot service:
+    \begin{itemize}
+        \item \texttt{SPRING\_DATASOURCE\_URL} = \texttt{jdbc:postgresql://\$\{\{Postgres.PGHOST\}\}:\$\{\{Postgres.PGPORT\}\}/\$\{\{Postgres.PGDATABASE\}\}}
+        \item \texttt{SPRING\_DATASOURCE\_USERNAME} = \texttt{\$\{\{Postgres.PGUSER\}\}}
+        \item \texttt{SPRING\_DATASOURCE\_PASSWORD} = \texttt{\$\{\{Postgres.PGPASSWORD\}\}}
+        \item \texttt{SPRING\_DATASOURCE\_DRIVER\_CLASS\_NAME} = \texttt{org.postgresql.Driver}
+        \item \texttt{SPRING\_JPA\_DATABASE\_PLATFORM} = \texttt{org.hibernate.dialect.PostgreSQLDialect}
+        \item \texttt{PORT} = \texttt{8080} (Or leave to let Railway bind dynamically)
+    \end{itemize}
+    \item Deploy the service. Railway automatically detects the \texttt{Dockerfile} in the root directory and builds it.
+\end{enumerate}
+
 \section{Usage}
 
 \subsection{1. Authentication and Registration}
@@ -175,6 +193,23 @@ The "Create Project" form validates input and ensures all necessary details like
 
 \subsection{Example 2: Account Deletion}
 To delete an account, the user must navigate to the Profile page, scroll to the bottom, and click "Delete Account". A modal appears requiring the user to type "delete" to confirm, preventing accidental data loss.
+
+\section{Advanced Data Structures \& Algorithms}
+For the final project requirements, two custom data structures/algorithms are implemented from scratch (without relying on standard Java collection helpers) and integrated:
+
+\subsection{1. Knuth-Morris-Pratt (KMP) String Matcher}
+\begin{itemize}
+    \item \textbf{Purpose:} Used for filtering project search results. When users search for keywords, the backend executes KMP in-memory on project titles, descriptions, and skill tags instead of basic database wildcard scans.
+    \item \textbf{How it Works:} KMP computes a prefix function array ($\pi$-array) for the pattern in $O(M)$ time. During search, if a mismatch occurs, the pattern pointer shifts back based on the $\pi$-array value, avoiding backtracking on the main text pointer. Total search complexity is $O(N + M)$ where $N$ is text length and $M$ is pattern length.
+    \item \textbf{Visual Representation:} The frontend features a KMP Matcher Simulator where users step through character comparisons, see pointer movements, backtracking shifts, and the calculated $\pi$-table in real-time.
+\end{itemize}
+
+\subsection{2. Red-Black Tree (RBTree) Indexer}
+\begin{itemize}
+    \item \textbf{Purpose:} Used to index active projects by their required team size in-memory. This allows the backend search API to support fast range-based queries (e.g. "show projects needing between 2 and 5 members").
+    \item \textbf{How it Works:} The Red-Black Tree is a self-balancing binary search tree. Each node is colored RED or BLACK. Balance is maintained through rotations and recolorings upon node insertion/deletion, preserving a maximum height of $2 \log_2(n + 1)$, ensuring search, insertion, and range lookups take $O(\log n)$ time.
+    \item \textbf{Visual Representation:} The frontend renders an interactive SVG diagram of the Red-Black Tree. Users can insert project keys and watch nodes balance, recolor, and perform left/right rotations. A console log prints step-by-step rebalancing operations.
+\end{itemize}
 
 \section{Conclusions and Next Steps}
 This application provides a robust solution for the startup ecosystem, allowing efficient team formation. Users benefit from an optimized and secure experience.
