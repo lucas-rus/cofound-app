@@ -54,3 +54,6 @@ frontend/*.log
 
 # Uploads
 uploads/
+
+# Local Documentation
+DOCUMENTATION.txt
